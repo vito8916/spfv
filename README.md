@@ -1,38 +1,6 @@
-# SupaNext Starter Kit
+# SPFV SAAS
 
-A modern, full-featured starter kit combining Next.js 15 with Supabase for authentication and data storage. This project provides a solid foundation for building web applications with a beautiful UI, authentication flows, and user settings management.
-
-## 🚀 Demo
-
-[SupaNext Starter Kit](https://supanext-starter-kit.vicbox.dev)
-
-![SupaNext Starter Kit](https://supanext-starter-kit.vicbox.dev/supanext-kit.webp)
-
-## Features
-
-- 🔐 **Complete Authentication System**
-  - Sign up with email verification
-  - Sign in with email/password
-  - Social login with Google, GitHub, and Facebook
-  - Password reset flow
-  - Protected routes
-
-- 🎨 **Modern UI Components**
-  - Built with Tailwind CSS 4 and shadcn/ui
-  - Responsive design
-  - Dark/light mode support
-  - Beautiful dashboard layout
-
-- ⚙️ **User Settings**
-  - Profile management
-  - Password updates
-  - Theme preferences
-
-- 🛠️ **Developer Experience**
-  - TypeScript for type safety
-  - Form validation with Zod
-  - Server actions for API calls
-  - Toast notifications with Sonner
+Description goes here
 
 ## Tech Stack
 
@@ -56,8 +24,8 @@ A modern, full-featured starter kit combining Next.js 15 with Supabase for authe
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/vito8916/supanext-starter-kit.git
-   cd supanext-starter-kit
+   git clone https://github.com/vito8916/spfv.git
+   cd spfv
    ```
 
 2. Install dependencies:
@@ -128,8 +96,6 @@ supanext-starter-kit/
 ```
 
 ## Authentication Flow
-
-The starter kit includes a complete authentication system:
 
 1. **Sign Up**: Users can create an account with email/password
    - Email verification is required
@@ -222,27 +188,6 @@ You can also deploy to other platforms that support Next.js:
 - [Netlify](https://www.netlify.com/)
 - [AWS Amplify](https://aws.amazon.com/amplify/)
 - [DigitalOcean App Platform](https://www.digitalocean.com/products/app-platform/)
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- [Next.js](https://nextjs.org/)
-- [Supabase](https://supabase.com/)
-- [shadcn/ui](https://ui.shadcn.com/)
-- [Tailwind CSS](https://tailwindcss.com/)
 
 ---
 
