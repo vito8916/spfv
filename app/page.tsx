@@ -1,9 +1,8 @@
 import {Button} from "@/components/ui/button";
 import Link from "next/link";
 import {ArrowRight, Check, Database, Settings, Github, Facebook, Twitter, MessageCircle} from "lucide-react";
-import {Card} from "@/components/ui/card";
+import {Card, CardHeader, CardTitle, CardDescription, CardContent} from "@/components/ui/card";
 import {Metadata} from "next";
-import Image from "next/image";
 import Logo from "@/components/logo";
 
 export const metadata: Metadata = {
@@ -86,7 +85,7 @@ export default function Home() {
             </div>
 
             {/* Features Section */}
-            <section className="py-20 bg-secondary">
+            <section className="py-20 bg-background-secondary">
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl font-bold mb-4">The Model That Increases</h2>
@@ -164,24 +163,24 @@ export default function Home() {
                         <div className="space-y-6">
                             {[
                                 {
-                                    title: "Save Development Time",
+                                    title: "Advanced Trading Tools",
                                     description:
-                                        "Skip the boilerplate setup and focus on building your unique features",
+                                        "Access powerful SPFV tools and algorithms for precise fair value calculations",
                                 },
                                 {
-                                    title: "Modern Tech Stack",
+                                    title: "Real-time Analysis",
                                     description:
-                                        "Built with Next.js 15, Supabase, and Tailwind CSS 4 for a powerful development experience",
+                                        "Get instant market insights and fair value calculations to make informed decisions",
                                 },
                                 {
-                                    title: "Authentication Ready",
+                                    title: "Community Support",
                                     description:
-                                        "Complete authentication system with email/password and social providers (Google, GitHub, Facebook)",
+                                        "Join a thriving community of traders and get support when you need it",
                                 },
                                 {
-                                    title: "Responsive UI",
+                                    title: "Professional Platform",
                                     description:
-                                        "Beautiful, responsive UI components built with Tailwind CSS 4 and Shadcn UI",
+                                        "Built with modern technology to ensure reliability and performance",
                                 },
                             ].map((benefit) => (
                                 <div key={benefit.title} className="flex gap-4 items-start">
@@ -202,20 +201,117 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* CTA Section */}
-            <section className="py-20 bg-secondary relative overflow-hidden">
+            {/* Pricing Section */}
+            <section className="py-20 bg-background-secondary relative overflow-hidden">
                 <div className="absolute inset-0 bg-[url('/pattern-7.svg')] bg-cover opacity-50"/>
-                <div className="relative z-10 container mx-auto px-4 text-center">
+                <div className="relative z-10 container mx-auto px-4">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl font-bold mb-4">Choose Your Plan</h2>
+                        <p className="text-muted-foreground max-w-2xl mx-auto">
+                            Select the perfect plan for your trading needs and start maximizing your potential today.
+                        </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                        {[
+                            {
+                                name: "Basic",
+                                price: "$29",
+                                description: "Perfect for getting started",
+                                features: [
+                                    "Basic SPFV tools access",
+                                    "Market analysis",
+                                    "Community access",
+                                    "Email support"
+                                ]
+                            },
+                            {
+                                name: "Pro",
+                                price: "$79",
+                                description: "Best for active traders",
+                                features: [
+                                    "Advanced SPFV tools access",
+                                    "Real-time market analysis",
+                                    "Priority community access",
+                                    "24/7 Priority support",
+                                    "Custom alerts",
+                                    "Advanced reporting"
+                                ],
+                                popular: true
+                            },
+                            {
+                                name: "Enterprise",
+                                price: "$199",
+                                description: "For professional traders",
+                                features: [
+                                    "Full SPFV suite access",
+                                    "Real-time advanced analytics",
+                                    "VIP community access",
+                                    "Dedicated support team",
+                                    "Custom integrations",
+                                    "API access",
+                                    "Team collaboration tools"
+                                ]
+                            }
+                        ].map((plan) => (
+                            <Card key={plan.name} className={`flex flex-col h-full transition-all hover:scale-105 ${
+                                plan.popular ? 'border-primary shadow-lg' : ''
+                            }`}>
+                                <CardHeader>
+                                    {plan.popular && (
+                                        <div className="px-3 py-1 text-xs font-semibold bg-primary text-primary-foreground rounded-full w-fit mb-4">
+                                            Most Popular
+                                        </div>
+                                    )}
+                                    <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
+                                    <CardDescription>
+                                        <span className="text-3xl font-bold">{plan.price}</span>
+                                        <span className="text-muted-foreground">/month</span>
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex-grow">
+                                    <p className="text-muted-foreground mb-4">{plan.description}</p>
+                                    <ul className="space-y-3">
+                                        {plan.features.map((feature) => (
+                                            <li key={feature} className="flex items-center gap-2">
+                                                <Check className="h-4 w-4 text-primary" />
+                                                <span className="text-sm">{feature}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </CardContent>
+                                <div className="px-6 mt-6">
+                                    <Link href="/sign-up">
+                                        <Button 
+                                            className={`w-full ${
+                                                plan.popular 
+                                                    ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
+                                                    : 'bg-secondary hover:bg-secondary/80'
+                                            }`}
+                                        >
+                                            Get Started
+                                        </Button>
+                                    </Link>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* CTA Section */}
+            <section className="py-20">
+                <div className="container mx-auto px-4 text-center">
                     <h2 className="text-3xl font-bold mb-4">
-                        Ready To Grow Your Business?
+                        Ready To Transform Your Trading?
                     </h2>
                     <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-                        Get started with Sp Fair Value and experience the power of our
-                        model. Sign up now and take your trading to the next level.
+                        Join SP Fair Value today and experience the power of our
+                        advanced fair value model. Start making more informed trading decisions.
                     </p>
                     <Link href="/sign-up">
                         <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2">
-                            Start Growing Now
+                            Start Trading Smarter
                             <ArrowRight className="h-4 w-4"/>
                         </Button>
                     </Link>
