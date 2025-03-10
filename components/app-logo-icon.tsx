@@ -1,8 +1,12 @@
-
-import {Wand2} from "lucide-react";
+import Image from "next/image";
 
 export default function AppLogoIcon() {
     return (
-        <Wand2 className="h-4 w-4 text-background" />
+        <Image
+            width={44}
+            height={44}
+            src="/spfv-short-logo.svg"
+            alt="sp fair value logo"
+            className="h-4 w-4 text-primary-foreground" />
     );
 }
