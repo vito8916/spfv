@@ -1,30 +1,207 @@
+'use client'
+
 import React from 'react';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { userProfileSchema, type UserProfileFormData } from "@/lib/validations/user-profile";
+import { US_STATES } from "@/lib/constants/location";
+
+// This would come from your database/auth context
+const mockUserData = {
+    fullName: "John Doe",
+    email: "john.doe@example.com"
+};
 
 const AdditionalDataForm = () => {
+    // Initialize form with react-hook-form and zod resolver
+    const form = useForm<UserProfileFormData>({
+        resolver: zodResolver(userProfileSchema),
+        defaultValues: {
+            fullName: mockUserData.fullName, // This would come from your database
+            email: mockUserData.email, // This would come from your database
+            address1: "",
+            address2: "",
+            city: "",
+            state: "",
+            zipCode: "",
+            phone: "",
+        },
+    });
+
+    const onSubmit = async (data: UserProfileFormData) => {
+        try {
+            console.log("Form submitted:", data);
+            // TODO: Handle form submission
+        } catch (error) {
+            console.error("Error submitting form:", error);
+        }
+    };
+
     return (
-        <div>
-            <h1 className="text-2xl font-bold mb-4">Additional Data</h1>
-            <form className="space-y-4">
-                {/*town/city*/}
-                <div>
-                    <label htmlFor="city" className="block text-sm font-medium text-gray-700">City</label>
-                    <input type="text" id="city" name="city" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"/>
-                </div>
-                <div>
-                    <label htmlFor="address" className="block text-sm font-medium text-gray-700">Address</label>
-                    <input type="text" id="address" name="address" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"/>
-                </div>
-                <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
-                    <input type="tel" id="phone" name="phone" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"/>
-                </div>
-                {/*postcode*/}
-                <div>
-                    <label htmlFor="postcode" className="block text-sm font-medium text-gray-700">Postcode</label>
-                    <input type="text" id="postcode" name="postcode" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500"/>
-                </div>
-                <button type="submit" className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90">Submit</button>
-            </form>
+        <div className="max-w-2xl mx-auto p-6">
+
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    {/* User Info Fields (Read-only) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="fullName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Full Name</FormLabel>
+                                    <FormControl>
+                                        <Input 
+                                            {...field} 
+                                            readOnly 
+                                            className="bg-muted"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                        <Input 
+                                            {...field} 
+                                            readOnly 
+                                            className="bg-muted"
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    {/* Address Fields */}
+                    <FormField
+                        control={form.control}
+                        name="address1"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Street Address</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="123 Main St" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="address2"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Apartment, suite, etc. (optional)</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Apt 4B" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    {/* City, State, ZIP */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <FormField
+                            control={form.control}
+                            name="city"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>City</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="New York" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="state"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>State</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger className='w-full'>
+                                                <SelectValue placeholder="Select state" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {US_STATES.map((state) => (
+                                                <SelectItem key={state.value} value={state.value}>
+                                                    {state.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="zipCode"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>ZIP Code</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="12345" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                    {/* Phone Number */}
+                    <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Phone Number</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="(123) 456-7890" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <Button type="submit" className="w-full">
+                        Save and Continue
+                    </Button>
+                </form>
+            </Form>
         </div>
     );
 };
