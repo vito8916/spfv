@@ -170,7 +170,6 @@ const RegisterForm = () => {
           Or continue with
         </div>
         <div className="flex items-center justify-center gap-x-4">
-          <GitHubSignInButton />
           <GoogleSignInButton />
           <FacebookSignInButton />
         </div>
