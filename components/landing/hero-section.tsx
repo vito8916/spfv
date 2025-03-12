@@ -5,8 +5,7 @@ import { ArrowRight } from "lucide-react";
 
 export function HeroSection() {
     return (
-        <div className="relative">
-            <div className="absolute inset-0 bg-[url('/pattern-7.svg')] bg-cover opacity-50"/>
+        <div>
             <div className="relative z-10">
                 <header className="container mx-auto px-4 py-6">
                     <nav className="flex items-center justify-between">
