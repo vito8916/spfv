@@ -4,7 +4,7 @@ import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, Sideba
 import { type NavItem } from '@/types';
 import Link from "next/link";
 import {usePathname} from "next/navigation";
-import {LayoutGrid, SettingsIcon} from "lucide-react";
+import {LayoutGrid, UserIcon} from "lucide-react";
 
 /*
 * Main navigation items
@@ -17,9 +17,9 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Settings',
-        url: '/settings',
-        icon: SettingsIcon,
+        title: 'Profile',
+        url: '/profile',
+        icon: UserIcon,
     },
 ];
 
