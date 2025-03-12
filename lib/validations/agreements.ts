@@ -1,12 +1,12 @@
 import * as z from "zod";
 
 export const agreementsSchema = z.object({
-    termsAndConditions: z.boolean().refine(value => value === true, {
-        message: "You must accept the Terms and Conditions"
+    termsAccepted: z.boolean().refine((val) => val === true, {
+        message: "You must accept the terms and conditions",
     }),
-    privacyPolicy: z.boolean().refine(value => value === true, {
-        message: "You must accept the Privacy Policy"
-    })
+    privacyAccepted: z.boolean().refine((val) => val === true, {
+        message: "You must accept the privacy policy",
+    }),
 });
 
 export type AgreementsFormData = z.infer<typeof agreementsSchema>; 

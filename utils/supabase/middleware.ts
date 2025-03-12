@@ -35,33 +35,69 @@ export const updateSession = async (request: NextRequest) => {
       },
     );
 
-    // This will refresh session if expired - required for Server Components
-    // https://supabase.com/docs/guides/auth/server-side/nextjs
-    const user = await supabase.auth.getUser();
+    // Get the user
+    const { data: { user } } = await supabase.auth.getUser();
 
-    // protected routes
-    if (request.nextUrl.pathname.startsWith("/dashboard") && user.error) {
-      return NextResponse.redirect(new URL("/sign-in", request.url));
-    }
-    if (request.nextUrl.pathname.startsWith("/settings") && user.error) {
-      return NextResponse.redirect(new URL("/sign-in", request.url));
+    // Define routes
+    const publicRoutes = ['/', '/sign-in', '/sign-up', '/auth/callback', '/additional-data', '/agreements', '/success-payment'];
+    const protectedRoutes = ['/dashboard', '/settings', '/profile', '/account-confirmation'];
+    const currentPath = request.nextUrl.pathname;
+
+    // Check protected routes first
+    if (protectedRoutes.some(route => currentPath.startsWith(route))) {
+      // Check authentication first
+      if (!user) {
+        return NextResponse.redirect(new URL('/sign-in', request.url));
+      }
+
+      // Check subscription status
+      const { data: subscription } = await supabase
+        .from('subscriptions')
+        .select('status')
+        .eq('user_id', user.id)
+        .single();
+
+      // Handle subscription states
+      if (!subscription && currentPath !== '/account-confirmation') {
+        return NextResponse.redirect(new URL('/account-confirmation', request.url));
+      }
+
+      if (subscription && subscription.status !== 'active' && !currentPath.startsWith('/settings')) {
+        return NextResponse.redirect(new URL('/settings', request.url));
+      }
+
+      if (subscription?.status === 'active' && currentPath === '/') {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
     }
 
-    // if user is logged in, redirect to dashboard
-    if (request.nextUrl.pathname === "/" && !user.error) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+    // Handle public routes
+    if (publicRoutes.some(route => currentPath.startsWith(route))) {
+      // If user is logged in and tries to access auth pages, check subscription and redirect
+      if (user && ['/sign-in', '/sign-up'].some(route => currentPath.startsWith(route))) {
+        const { data: subscription } = await supabase
+          .from('subscriptions')
+          .select('status')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .single();
+
+        if (subscription) {
+          return NextResponse.redirect(new URL('/dashboard', request.url));
+        }
+      }
+      return response;
+    }
+
+    // For any other routes, require authentication
+    if (!user) {
+      return NextResponse.redirect(new URL('/sign-in', request.url));
     }
 
     return response;
   } catch (e) {
-    console.error(e);
-    // If you are here, a Supabase client could not be created!
-    // This is likely because you have not set up environment variables.
-    // Check out http://localhost:3000 for Next Steps.
-    return NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    });
+    console.error('Middleware error:', e);
+    // If there's an error, redirect to home page
+    return NextResponse.redirect(new URL('/', request.url));
   }
 };
