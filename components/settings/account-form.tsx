@@ -45,9 +45,9 @@ export function AccountForm( { user }: { user: User }) {
           <div className="space-y-1 flex-1">
             <div className="flex flex-col md:flex-row md:items-center gap-2">
               <h2 className="text-2xl font-bold">{user.user_metadata.full_name}</h2>
-              <Badge className="bg-primary text-primary-foreground ml-0 md:ml-2">
-                Pro Account
-              </Badge>
+              {/* <Badge className="bg-primary text-primary-foreground ml-0 md:ml-2">
+                Pro Account {user.user_metadata.pro_account ? "Active" : "Inactive"}
+              </Badge> */}
             </div>
             <p className="text-muted-foreground">{user.email}</p>
             <p className="text-sm text-muted-foreground">
