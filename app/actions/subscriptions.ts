@@ -32,6 +32,7 @@ export type Subscription = {
 
 // Validation schemas
 const createSubscriptionSchema = z.object({
+  id: z.string().min(1, 'Subscription ID is required'),
   user_id: z.string().min(1, 'User ID is required'),
   price_id: z.string().min(1, 'Price ID is required'),
   status: z.enum(['active', 'canceled', 'incomplete', 'incomplete_expired', 'past_due', 'trialing', 'unpaid']),
