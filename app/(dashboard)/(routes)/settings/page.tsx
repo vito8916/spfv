@@ -8,15 +8,13 @@ import {
 } from "@/components/ui/card";
 import { PasswordForm } from "@/components/settings/password-form";
 import { AppearanceForm } from "@/components/settings/appearance-form";
-import { createClient } from "@/utils/supabase/server";
+import { getAuthUser } from "@/app/actions/actions";
 import { AccountForm } from "@/components/settings/account-form";
 import { DeleteAccount } from "@/components/settings/delete-account";
+import { BillingOverview } from "@/components/settings/billing-overview";
 
 const SettingsPage = async () => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser();
 
   if (!user) {
     return (
@@ -36,8 +34,9 @@ const SettingsPage = async () => {
       </div>
 
       <Tabs defaultValue="account" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-8">
+        <TabsList className="grid w-full grid-cols-4 mb-8">
           <TabsTrigger value="account">Account</TabsTrigger>
+          <TabsTrigger value="billing">Billing</TabsTrigger>
           <TabsTrigger value="password">Password</TabsTrigger>
           <TabsTrigger value="appearance">Theme</TabsTrigger>
         </TabsList>
@@ -46,6 +45,12 @@ const SettingsPage = async () => {
           <div className="space-y-6">
             <AccountForm user={user} />
             <DeleteAccount />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="billing">
+          <div className="space-y-6">
+            <BillingOverview userId={user.id} />
           </div>
         </TabsContent>
 
