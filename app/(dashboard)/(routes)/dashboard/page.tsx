@@ -19,7 +19,7 @@ const DashboardPage = async () => {
       <div className="grid auto-rows-min gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle>Welcome back, {user.email}</CardTitle>
+            <CardTitle>Welcome back, {user.user_metadata.full_name}</CardTitle>
           </CardHeader>
           <CardContent>
             <h2 className="font-bold text-2xl mb-4">Your user details</h2>
