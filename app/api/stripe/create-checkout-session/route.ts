@@ -24,6 +24,9 @@ export async function POST(req: Request) {
             );
         }
 
+        // Get origin from request headers
+        const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_SITE_URL;
+
         // Create a checkout session
         const session = await stripe.checkout.sessions.create({
             customer_email: user.email,
@@ -35,8 +38,8 @@ export async function POST(req: Request) {
                 },
             ],
             mode: 'subscription',
-            success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/success-payment?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/account-confirmation`,
+            success_url: `${origin}/success-payment?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${origin}/account-confirmation`,
             metadata: {
                 user_id: user.id,
             },

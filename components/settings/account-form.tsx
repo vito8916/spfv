@@ -1,7 +1,6 @@
 
 import { LoaderCircle, UserCog, Pencil } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
