@@ -7,6 +7,7 @@ create table users
     -- UUID from auth.users
     id              uuid references auth.users not null primary key,
     full_name       text,
+    bio             text,
     avatar_url      text,
     -- The customer's billing address, stored in JSON format.
     billing_address jsonb,
