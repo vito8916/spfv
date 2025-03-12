@@ -29,7 +29,10 @@ export const signUpAction = async (formData: FormData) => {
   const password = formData.get("password")?.toString();
   const fullName = formData.get("fullName")?.toString();
   const supabase = await createClient();
-  const origin = (await headers()).get("origin");
+  
+  // Get the origin from headers or fall back to environment variable
+  const headersList = await headers();
+  const origin = headersList.get("origin") || process.env.NEXT_PUBLIC_SITE_URL;
 
   if (!email || !password) {
     return {
@@ -108,7 +111,8 @@ export const signInAction = async (formData: FormData) => {
 export const forgotPasswordAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const supabase = await createClient();
-  const origin = (await headers()).get("origin");
+  const headersList = await headers();
+  const origin = headersList.get("origin") || process.env.NEXT_PUBLIC_SITE_URL;
   const callbackUrl = formData.get("callbackUrl")?.toString();
 
   // Validate input
@@ -194,14 +198,16 @@ export const signOutAction = async () => {
 /* Sign in method using different providers */
 
 export async function signInWithGitHub() {
-  const supabase = await createClient()
+  const supabase = await createClient();
+  const headersList = await headers();
+  const origin = headersList.get("origin") || process.env.NEXT_PUBLIC_SITE_URL;
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'github',
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+      redirectTo: `${origin}/auth/callback`
     }
-  })
+  });
 
   // If there's an error, return it. If success, return the URL.
   // No `redirect(...)` call here.
@@ -214,12 +220,15 @@ export async function signInWithGitHub() {
 
 export const signInWithGoogleAction = async () => {
   const supabase = await createClient();
+  const headersList = await headers();
+  const origin = headersList.get("origin") || process.env.NEXT_PUBLIC_SITE_URL;
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+      redirectTo: `${origin}/auth/callback`
     }
-  })
+  });
 
   if (error) {
     return { error: error.message };
@@ -230,12 +239,15 @@ export const signInWithGoogleAction = async () => {
 
 export const signInWithFacebookAction = async () => {
   const supabase = await createClient();
+  const headersList = await headers();
+  const origin = headersList.get("origin") || process.env.NEXT_PUBLIC_SITE_URL;
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "facebook",
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+      redirectTo: `${origin}/auth/callback`
     }
-  })
+  });
 
   if (error) {
     return { error: error.message };
