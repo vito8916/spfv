@@ -8,38 +8,38 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FileText, ShieldCheck } from "lucide-react";
+import { FileText, ShieldCheck, Loader2 } from "lucide-react";
 import { agreementsSchema, type AgreementsFormData } from "@/lib/validations/agreements";
 
-const AgreementsForm = () => {
+interface AgreementsFormProps {
+    onAgreementsAccepted: () => Promise<void>;
+    isLoading: boolean;
+}
+
+const AgreementsForm = ({ onAgreementsAccepted, isLoading }: AgreementsFormProps) => {
     const form = useForm<AgreementsFormData>({
         resolver: zodResolver(agreementsSchema),
         defaultValues: {
-            termsAndConditions: false,
-            privacyPolicy: false,
+            termsAccepted: false,
+            privacyAccepted: false,
         },
         mode: "onChange", // Enable real-time validation
     });
 
     // Watch both checkbox values
-    const termsAccepted = form.watch("termsAndConditions");
-    const privacyAccepted = form.watch("privacyPolicy");
-    
-    // Button is enabled only when both checkboxes are checked
-    const isSubmitEnabled = termsAccepted && privacyAccepted;
+    const termsAccepted = form.watch("termsAccepted");
+    const privacyAccepted = form.watch("privacyAccepted");
 
-    const onSubmit = async (data: AgreementsFormData) => {
-        try {
-            console.log("Form submitted:", data);
-            // TODO: Handle form submission
-        } catch (error) {
-            console.error("Error submitting form:", error);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (termsAccepted && privacyAccepted) {
+            await onAgreementsAccepted();
         }
     };
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid gap-6">
                     {/* Terms and Conditions */}
                     <Card>
@@ -74,7 +74,7 @@ const AgreementsForm = () => {
                         <CardFooter>
                             <FormField
                                 control={form.control}
-                                name="termsAndConditions"
+                                name="termsAccepted"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                                         <FormControl>
@@ -128,7 +128,7 @@ const AgreementsForm = () => {
                         <CardFooter>
                             <FormField
                                 control={form.control}
-                                name="privacyPolicy"
+                                name="privacyAccepted"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                                         <FormControl>
@@ -155,9 +155,16 @@ const AgreementsForm = () => {
                         type="submit" 
                         size="lg"
                         className="min-w-[200px]"
-                        disabled={!isSubmitEnabled}
+                        disabled={!termsAccepted || !privacyAccepted || isLoading}
                     >
-                        {isSubmitEnabled ? 'Continue' : 'Accept All Agreements to Continue'}
+                        {isLoading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Processing...
+                            </>
+                        ) : (
+                            termsAccepted && privacyAccepted ? 'Continue' : 'Accept All Agreements to Continue'
+                        )}
                     </Button>
                 </div>
             </form>
