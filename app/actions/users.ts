@@ -29,11 +29,13 @@ export type User = {
   bio: string | null;
   billing_address: BillingAddress | null;
   payment_method: PaymentMethod | null;
+  phone: string | null;
 };
 
 // Validation schemas
 const billingAddressSchema = z.object({
   street: z.string().min(1, 'Street is required'),
+  apartment: z.string().optional(),
   city: z.string().min(1, 'City is required'),
   state: z.string().min(1, 'State is required'),
   postalCode: z.string().min(1, 'Postal code is required'),
@@ -54,6 +56,7 @@ const updateUserSchema = z.object({
   bio: z.string().max(160, 'Bio must be less than 160 characters').optional(),
   billing_address: billingAddressSchema.optional(),
   payment_method: paymentMethodSchema.optional(),
+  phone: z.string().optional(),
 });
 
 /**

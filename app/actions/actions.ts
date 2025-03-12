@@ -4,8 +4,25 @@ import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { updateProfileAction, updatePasswordAction } from "@/app/actions/settings";
+import { cache } from "react";
+import { User } from "@supabase/supabase-js";
 
 export { updateProfileAction, updatePasswordAction };
+
+
+export const getAuthUser = cache(async (): Promise<User | null> => {
+  const supabase = await createClient();
+  
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  if (error) {
+    console.error('Error fetching user:', error);
+    return null;
+  }
+
+  return user;
+});
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();

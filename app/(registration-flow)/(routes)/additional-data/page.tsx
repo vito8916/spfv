@@ -1,10 +1,23 @@
-"use client";
-
 import React from "react";
 import AdditionalDataForm from "@/components/registration-flow/additional-data-form";
 import { UserRound } from "lucide-react";
+import { redirect } from "next/navigation";
+import { getAuthUser } from "@/app/actions/actions";
 
-const AdditionalDataPage = () => {
+const AdditionalDataPage = async () => {
+  const user = await getAuthUser();
+
+  if (!user) {
+    redirect("/sign-in");
+  }
+
+  const userInfo = {
+    fullName: user.user_metadata.full_name,
+    email: user.email || "",
+    avatar: user.user_metadata.avatar,
+  };
+
+  console.log(userInfo);
   return (
     <div className="container max-w-4xl mx-auto p-6">
       <div className="text-center mb-8">
@@ -19,7 +32,7 @@ const AdditionalDataPage = () => {
         </p>
       </div>
       <div className="w-full">
-        <AdditionalDataForm />
+        <AdditionalDataForm user_info={userInfo} />
       </div>
     </div>
   );

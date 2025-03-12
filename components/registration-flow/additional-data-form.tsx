@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import {
@@ -22,20 +22,32 @@ import {
 } from "@/components/ui/select";
 import { userProfileSchema, type UserProfileFormData } from "@/lib/validations/user-profile";
 import { US_STATES } from "@/lib/constants/location";
+import { getCurrentUser, updateUser } from '@/app/actions/users';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import AdditionalDataSkeleton from '../skeletons/additional-data-skeleton';
+import { Loader2 } from 'lucide-react';
 
-// This would come from your database/auth context
-const mockUserData = {
-    fullName: "John Doe",
-    email: "john.doe@example.com"
-};
+interface UserInfo {
+    fullName: string;
+    email: string;
+    avatar: string;
+}
 
-const AdditionalDataForm = () => {
+interface AdditionalDataFormProps {
+    user_info: UserInfo;
+}
+
+const AdditionalDataForm = ({ user_info }: AdditionalDataFormProps) => {
+    const router = useRouter(); 
+    const [isLoading, setIsLoading] = useState(true);
+
     // Initialize form with react-hook-form and zod resolver
     const form = useForm<UserProfileFormData>({
         resolver: zodResolver(userProfileSchema),
         defaultValues: {
-            fullName: mockUserData.fullName, // This would come from your database
-            email: mockUserData.email, // This would come from your database
+            fullName: user_info.fullName || "",
+            email: user_info.email || "",
             address1: "",
             address2: "",
             city: "",
@@ -45,21 +57,74 @@ const AdditionalDataForm = () => {
         },
     });
 
+    const { isSubmitting } = form.formState;
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                setIsLoading(true);
+                const user = await getCurrentUser();
+                
+                if (!user) {
+                    toast.error("Failed to fetch user data");
+                    return;
+                }
+
+                form.reset({
+                    fullName: user_info.fullName || "",
+                    email: user_info.email || "",
+                    address1: user.billing_address?.street || "",
+                    address2: "",  // Since address2 is not in the BillingAddress type
+                    city: user.billing_address?.city || "",
+                    state: user.billing_address?.state || "",
+                    zipCode: user.billing_address?.postalCode || "",
+                    phone: user.phone || "",
+                });
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+                toast.error("Failed to load user data");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchUserData();
+    }, [form, user_info]);
+
     const onSubmit = async (data: UserProfileFormData) => {
         try {
-            console.log("Form submitted:", data);
-            // TODO: Handle form submission
+            const response = await updateUser({
+                full_name: data.fullName,
+                billing_address: {
+                    street: data.address1,
+                    city: data.city,
+                    state: data.state,
+                    postalCode: data.zipCode,
+                    country: "USA",
+                },
+                phone: data.phone,
+            });
+
+            if (!response.success) {
+                throw new Error(response.error);
+            }
+
+            toast.success("Profile updated successfully");
+            router.push("/agreements");
         } catch (error) {
             console.error("Error submitting form:", error);
+            toast.error(error instanceof Error ? error.message : "Failed to update profile");
         }
     };
 
     return (
         <div className="max-w-2xl mx-auto p-6">
-
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    {/* User Info Fields (Read-only) */}
+            {isLoading ? (
+                <AdditionalDataSkeleton />
+            ) : (
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        {/* User Info Fields (Read-only) */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                             control={form.control}
@@ -197,11 +262,25 @@ const AdditionalDataForm = () => {
                         )}
                     />
 
-                    <Button type="submit" className="w-full">
-                        Save and Continue
+                    {/* Continue Button */}
+                    <Button 
+                        type="submit" 
+                        className="w-full"
+                        disabled={isSubmitting}
+                        aria-label="Save profile information and continue"
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Saving...
+                            </>
+                        ) : (
+                            'Save and Continue'
+                        )}
                     </Button>
-                </form>
-            </Form>
+                    </form>
+                </Form>
+            )}
         </div>
     );
 };
