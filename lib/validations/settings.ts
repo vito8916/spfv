@@ -5,12 +5,7 @@ export const profileFormSchema = z.object({
   name: z
     .string()
     .min(2, { message: "Name must be at least 2 characters." })
-    .max(30, { message: "Name must not be longer than 30 characters." }),
-  email: z
-    .string()
-    .min(1, { message: "This field is required" })
-    .email("This is not a valid email"),
-  bio: z.string().max(160, { message: "Bio must not be longer than 160 characters." }).optional(),
+    .max(30, { message: "Name must not be longer than 30 characters." })
 })
 
 // Password form schema

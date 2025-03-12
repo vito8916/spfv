@@ -17,15 +17,11 @@ export async function updateProfileAction(formData: FormData) {
     
     // Parse and validate the form data
     const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
-    const bio = formData.get("bio") as string;
     
     // Validate with Zod
     const validatedFields = z.object({
       name: z.string().min(2).max(30),
-      email: z.string().email(),
-      bio: z.string().max(160).optional(),
-    }).safeParse({ name, email, bio });
+    }).safeParse({ name });
     
     if (!validatedFields.success) {
       return { error: "Invalid form data. Please check your inputs." };
@@ -33,10 +29,8 @@ export async function updateProfileAction(formData: FormData) {
     
     // Update user metadata
     const { error: updateError } = await supabase.auth.updateUser({
-      email: email !== user.email ? email : undefined,
-      data: {
+        data: {
         full_name: name,
-        bio: bio || null,
       },
     });
     
@@ -115,5 +109,73 @@ export async function updatePasswordAction(formData: FormData) {
   } catch (error) {
     console.error("Password update error:", error);
     return { error: "Failed to update password. Please try again later." };
+  }
+}
+
+export async function getUserDataAction() {
+  try {
+    const supabase = await createClient();
+    
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return { error: "You must be logged in to view your profile" };
+    }
+
+    return {
+      success: true,
+      data: {
+        name: user.user_metadata.full_name || "Not set",
+        email: user.email || "Not set",
+        avatar_url: user.user_metadata.avatar_url || "Not set",
+        bio: user.user_metadata.bio || "",
+        created_at: new Date(user.created_at).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })
+      }
+    };
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    return { error: "Failed to fetch user data" };
+  }
+}
+
+export async function deleteAccountAction() {
+  try {
+    const supabase = await createClient();
+    
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return { error: "You must be logged in to delete your account" };
+    }
+    
+    // Delete user data from the users table
+    const { error: deleteError } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', user.id);
+
+    if (deleteError) {
+      console.error("Error deleting user data:", deleteError);
+      return { error: "Failed to delete user data" };
+    }
+
+    // Delete the user's auth account
+    const { error: authError } = await supabase.auth.admin.deleteUser(user.id);
+
+    if (authError) {
+      console.error("Error deleting auth user:", authError);
+      return { error: "Failed to delete account" };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    return { error: "Failed to delete account" };
   }
 } 

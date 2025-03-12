@@ -70,7 +70,6 @@ export function ProfileForm() {
       // Create FormData object
       const formData = new FormData();
       formData.append("name", data.name);
-      formData.append("email", data.email);
       formData.append("bio", data.bio || "");
       
       // Call the server action
@@ -126,7 +125,7 @@ export function ProfileForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="Your email" {...field} />
+                <Input placeholder="Your email" {...field} readOnly disabled />
               </FormControl>
               <FormDescription>
                 Your email address is used for notifications.
