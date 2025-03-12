@@ -1,93 +1,162 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
 import { stripe } from '@/lib/stripe';
+import { createClient } from '@supabase/supabase-js';
+import Stripe from 'stripe';
 
-// Your webhook secret from Stripe Dashboard or environment variables
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+// Initialize Supabase client with service role key for admin access
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+type SubscriptionStatus = "unpaid" | "active" | "canceled" | "incomplete" | "incomplete_expired" | "past_due" | "trialing";
+
+function mapStripeStatus(status: Stripe.Subscription.Status): SubscriptionStatus {
+    switch (status) {
+        case 'active':
+        case 'trialing':
+        case 'past_due':
+        case 'unpaid':
+        case 'canceled':
+        case 'incomplete':
+        case 'incomplete_expired':
+            return status;
+        case 'paused':
+            return 'incomplete';
+        default:
+            return 'incomplete';
+    }
+}
+
+function mapPaymentMethodToStorageFormat(paymentMethod: Stripe.PaymentMethod) {
+    return {
+        type: paymentMethod.type,
+        last4: paymentMethod.card?.last4 || '',
+        expMonth: paymentMethod.card?.exp_month || 0,
+        expYear: paymentMethod.card?.exp_year || 0,
+        brand: paymentMethod.card?.brand || '',
+    };
+}
+
+function mapAddressToStorageFormat(billingDetails: Stripe.PaymentMethod.BillingDetails) {
+    const address = billingDetails.address;
+    return {
+        street: address?.line1 || '',
+        city: address?.city || '',
+        state: address?.state || '',
+        postalCode: address?.postal_code || '',
+        country: address?.country || '',
+    };
+}
 
 export async function POST(req: Request) {
-  const body = await req.text();
-  const signature = (await headers()).get('stripe-signature');
+    const body = await req.text();
+    const signature = (await headers()).get('stripe-signature');
 
-  if (!signature) {
-    return NextResponse.json(
-      { error: 'Missing stripe-signature header' },
-      { status: 400 }
-    );
-  }
-
-  try {
-    // Verify the webhook signature
-    const event = stripe.webhooks.constructEvent(
-      body,
-      signature,
-      endpointSecret
-    ) as Stripe.Event;
-
-    // Handle specific event types
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
-        // Handle successful checkout
-        await handleCheckoutSession(session);
-        break;
-      }
-
-      case 'payment_intent.succeeded': {
-        const payment = event.data.object as Stripe.PaymentIntent;
-        // Handle successful payment
-        await handlePaymentSuccess(payment);
-        break;
-      }
-
-      case 'customer.subscription.created':
-      case 'customer.subscription.updated':
-      case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription;
-        // Handle subscription changes
-        await handleSubscriptionChange(event.type, subscription);
-        break;
-      }
-
-      // Add more event types as needed
-      default:
-        console.log(`Unhandled event type: ${event.type}`);
+    if (!signature) {
+        return NextResponse.json(
+            { error: 'No signature found' },
+            { status: 400 }
+        );
     }
 
-    // Return a 200 response to acknowledge receipt of the event
-    return NextResponse.json({ received: true });
+    try {
+        const event = stripe.webhooks.constructEvent(
+            body,
+            signature,
+            process.env.STRIPE_WEBHOOK_SECRET!
+        );
 
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error('Webhook error:', error.message);
-      return NextResponse.json(
-        { error: `Webhook Error: ${error.message}` },
-        { status: 400 }
-      );
+        switch (event.type) {
+            case 'checkout.session.completed': {
+                const session = event.data.object as Stripe.Checkout.Session;
+                
+                // Get the subscription
+                const subscription = await stripe.subscriptions.retrieve(
+                    session.subscription as string,
+                    {
+                        expand: ['default_payment_method']
+                    }
+                );
+
+                // Get user_id from metadata
+                const userId = session.metadata?.user_id;
+                if (!userId) {
+                    throw new Error('No user ID found in session metadata');
+                }
+
+                // Create subscription in Supabase using service role
+                const { error: subscriptionError } = await supabase
+                    .from('subscriptions')
+                    .insert({
+                        id: subscription.id,
+                        user_id: userId,
+                        price_id: subscription.items.data[0].price.id,
+                        status: mapStripeStatus(subscription.status),
+                        quantity: subscription.items.data[0].quantity || 1,
+                        cancel_at_period_end: subscription.cancel_at_period_end,
+                        current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+                        current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                        metadata: {
+                            stripe_subscription_id: subscription.id,
+                            stripe_customer_id: subscription.customer as string,
+                            plan: subscription.items.data[0].price.product as string,
+                        },
+                    });
+
+                if (subscriptionError) {
+                    console.error('Error creating subscription:', subscriptionError);
+                    throw subscriptionError;
+                }
+
+                // Update user billing info if payment method exists
+                if (subscription.default_payment_method) {
+                    const paymentMethod = subscription.default_payment_method as Stripe.PaymentMethod;
+                    const { error: userError } = await supabase
+                        .from('users')
+                        .update({
+                            billing_address: mapAddressToStorageFormat(paymentMethod.billing_details),
+                            payment_method: mapPaymentMethodToStorageFormat(paymentMethod),
+                        })
+                        .eq('id', userId);
+
+                    if (userError) {
+                        console.error('Error updating user billing info:', userError);
+                    }
+                }
+                break;
+            }
+
+            case 'customer.subscription.updated':
+            case 'customer.subscription.deleted': {
+                const subscription = event.data.object as Stripe.Subscription;
+                
+                // Update subscription status in Supabase
+                const { error: updateError } = await supabase
+                    .from('subscriptions')
+                    .update({
+                        status: mapStripeStatus(subscription.status),
+                        cancel_at_period_end: subscription.cancel_at_period_end,
+                        current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+                        current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                    })
+                    .eq('id', subscription.id);
+
+                if (updateError) {
+                    console.error('Error updating subscription:', updateError);
+                    throw updateError;
+                }
+                break;
+            }
+        }
+
+        return NextResponse.json({ received: true });
+    } catch (error) {
+        console.error('Webhook error:', error);
+        return NextResponse.json(
+            { error: 'Webhook handler failed' },
+            { status: 400 }
+        );
     }
-    return NextResponse.json(
-      { error: 'Unknown error occurred' },
-      { status: 400 }
-    );
-  }
-}
-
-// Handler functions
-async function handleCheckoutSession(session: Stripe.Checkout.Session) {
-  // Add your checkout session handling logic here
-  console.log('Processing checkout session:', session.id);
-}
-
-async function handlePaymentSuccess(payment: Stripe.PaymentIntent) {
-  // Add your payment success handling logic here
-  console.log('Processing successful payment:', payment.id);
-}
-
-async function handleSubscriptionChange(
-  eventType: string,
-  subscription: Stripe.Subscription
-) {
-  // Add your subscription change handling logic here
-  console.log(`Processing ${eventType} for subscription:`, subscription.id);
 }
