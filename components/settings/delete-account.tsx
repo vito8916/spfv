@@ -24,6 +24,7 @@ import { deleteAccountAction } from "@/app/actions/settings";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+
 export function DeleteAccount() {
     const [isDeleting, setIsDeleting] = useState(false);
     const router = useRouter();

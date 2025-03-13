@@ -2,8 +2,12 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Logo from "@/components/logo";
 import { ArrowRight } from "lucide-react";
+import { getAuthUser } from "@/app/actions/actions";
 
-export function HeroSection() {
+export async function HeroSection() {
+
+    const user  = await getAuthUser();
+
     return (
         <div>
             <div className="relative z-10">
@@ -13,7 +17,13 @@ export function HeroSection() {
                             <Logo />
                         </div>
                         <div className="flex items-center gap-4">
-                            <Link href="/sign-in">
+                            {user ? (
+                                <Link href="/dashboard">
+                                    <Button variant="ghost">Dashboard</Button>
+                                </Link>
+                            ) : (
+                                <>
+                                 <Link href="/sign-in">
                                 <Button variant="ghost">Sign In</Button>
                             </Link>
                             <Link href="/sign-up">
@@ -21,6 +31,8 @@ export function HeroSection() {
                                     Get Started
                                 </Button>
                             </Link>
+                                </>
+                            )}
                         </div>
                     </nav>
                 </header>
