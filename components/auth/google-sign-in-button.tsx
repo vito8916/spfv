@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Google from "@/components/google-icon";
 import { useState } from "react";
-import { signInWithGoogleAction } from "@/app/actions/actions";
+import { signInWithGoogleAction } from "@/app/actions/auth";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 

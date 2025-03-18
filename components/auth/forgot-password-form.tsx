@@ -11,7 +11,7 @@ import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
-import {forgotPasswordAction} from "@/app/actions/actions";
+import {forgotPasswordAction} from "@/app/actions/auth";
 import {toast} from "sonner";
 
 const ForgotPasswordForm = () => {

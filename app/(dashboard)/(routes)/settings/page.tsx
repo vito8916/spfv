@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { PasswordForm } from "@/components/settings/password-form";
 import { AppearanceForm } from "@/components/settings/appearance-form";
-import { getAuthUser } from "@/app/actions/actions";
+import { getAuthUser } from "@/app/actions/auth";
 import { AccountForm } from "@/components/settings/account-form";
 import { DeleteAccount } from "@/components/settings/delete-account";
 import { BillingOverview } from "@/components/settings/billing-overview";

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Logo from "@/components/logo";
 import { ArrowRight } from "lucide-react";
-import { getAuthUser } from "@/app/actions/actions";
+import { getAuthUser } from "@/app/actions/auth";
 
 export async function HeroSection() {
 

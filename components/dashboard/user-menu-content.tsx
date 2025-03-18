@@ -7,7 +7,7 @@ import {
 import { UserInfo } from "@/components/dashboard/user-info";
 import Link from "next/link";
 import { LogOut, Settings } from "lucide-react";
-import { signOutAction } from "@/app/actions/actions";
+import { signOutAction } from "@/app/actions/auth";
 
 interface User {
   name: string;

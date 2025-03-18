@@ -2,7 +2,7 @@ import React from "react";
 import AdditionalDataForm from "@/components/registration-flow/additional-data-form";
 import { UserRound } from "lucide-react";
 import { redirect } from "next/navigation";
-import { getAuthUser } from "@/app/actions/actions";
+import { getAuthUser } from "@/app/actions/auth";
 
 const AdditionalDataPage = async () => {
   const user = await getAuthUser();

@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { signOutAction } from "@/app/actions/actions";
+import { signOutAction } from "@/app/actions/auth";
 
 const NavbarRegistrationFlow = () => {
   const pathname = usePathname();

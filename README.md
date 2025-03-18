@@ -80,7 +80,7 @@ supanext-starter-kit/
 ├── app/                    # Next.js App Router
 │   ├── (auth)/             # Authentication routes
 │   ├── (dashboard)/        # Dashboard routes (protected)
-│   ├── actions.ts          # Server actions
+│   ├── auth.ts          # Server actions
 │   └── actions/            # Grouped server actions
 ├── components/             # React components
 │   ├── auth/               # Authentication components

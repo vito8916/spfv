@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import Github from "@/components/github-icon";
 import { Loader2 } from "lucide-react";
-import { signInWithGitHub } from "@/app/actions/actions";
+import { signInWithGitHub } from "@/app/actions/auth";
 import { toast } from "sonner";
 
 export function GitHubSignInButton() {

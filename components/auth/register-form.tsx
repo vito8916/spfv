@@ -22,7 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { signUpAction } from "@/app/actions/actions";
+import { signUpAction } from "@/app/actions/auth";
 import { toast } from "sonner";
 import { useState } from "react";
 

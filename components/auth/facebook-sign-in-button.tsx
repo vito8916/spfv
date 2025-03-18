@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { signInWithFacebookAction } from "@/app/actions/actions";
+import { signInWithFacebookAction } from "@/app/actions/auth";
 import { toast } from "sonner";
 import Facebook from "@/components/facebook-icon";
 import { Loader2 } from "lucide-react";
