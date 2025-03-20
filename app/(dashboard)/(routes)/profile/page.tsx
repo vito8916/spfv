@@ -1,8 +1,9 @@
-import { Suspense } from 'react';
-import { UserProfile } from '@/components/profile/user-profile';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Suspense } from "react";
+import { UserProfile } from "@/components/profile/user-profile";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
 
-export const revalidate = 0; // Make sure the page is always fresh
+//export const revalidate = 0; // Make sure the page is always fresh
 
 export default function ProfilePage() {
   return (
@@ -16,21 +17,23 @@ export default function ProfilePage() {
 
       <Suspense
         fallback={
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <Skeleton className="h-16 w-16 rounded-full" />
-              <Skeleton className="h-8 w-[250px]" />
-              <Skeleton className="h-4 w-[200px]" />
-            </div>
-            <div className="space-y-4">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-          </div>
+          <Card className="space-y-6">
+            <CardContent>
+              <div className="space-y-4">
+                <Skeleton className="h-16 w-16 rounded-full" />
+                <Skeleton className="h-8 w-[250px]" />
+                <Skeleton className="h-4 w-[200px]" />
+              </div>
+              <div className="space-y-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            </CardContent>
+          </Card>
         }
       >
         <UserProfile />
       </Suspense>
     </div>
   );
-} 
+}
