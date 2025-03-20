@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { updateProfileAction, updatePasswordAction } from "@/app/actions/settings";
 import { cache } from "react";
 import { User } from "@supabase/supabase-js";
+import {resendVerificationSchema} from "@/lib/validations/auth";
 
 export { updateProfileAction, updatePasswordAction };
 
@@ -29,10 +30,6 @@ export const signUpAction = async (formData: FormData) => {
   const password = formData.get("password")?.toString();
   const fullName = formData.get("fullName")?.toString();
   const supabase = await createClient();
-  
-  // Get the origin from headers or fall back to environment variable
-  const headersList = await headers();
-  const origin = headersList.get("origin") || process.env.NEXT_PUBLIC_SITE_URL;
 
   if (!email || !password) {
     return {
@@ -46,7 +43,6 @@ export const signUpAction = async (formData: FormData) => {
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback`,
       data: {
         full_name: fullName,
       },
@@ -65,8 +61,7 @@ export const signUpAction = async (formData: FormData) => {
   return {
     status: "success",
     redirect: "/sign-up",
-    message:
-      "Thanks for signing up! Please check your email for a verification link.",
+    message: "Thanks for signing up! Please check your email for a verification link.",
   };
 };
 
@@ -188,6 +183,57 @@ export const resetPasswordAction = async (formData: FormData) => {
     message: "Password updated",
   }
 };
+
+export async function resendVerificationEmailAction(formData: FormData) {
+  const email = formData.get("email")?.toString();
+  // return early if email is not provided
+  if (!email) {
+    return {
+      status: "error",
+      redirect: "/resend-verification",
+      message: "Email is required",
+    }
+  }
+
+  // Validate email format with Zod
+  const validatedFields = resendVerificationSchema.safeParse({
+    email: formData.get('email'),
+  })
+
+  // Return early if the form data is invalid
+  if (!validatedFields.success) {
+    return {
+      status: "error",
+        redirect: "/resend-verification",
+        message: validatedFields.error.format().email?._errors[0] as string,
+    }
+  }
+
+
+  const supabase = await createClient()
+
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email: email,
+    options: {
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm`,
+    },
+  })
+
+  if (error) {
+    return {
+        status: "error",
+        redirect: "/resend-verification",
+        message: error.message,
+    }
+  }
+
+  return {
+    status: "success",
+    redirect: "/sign-in",
+    message: "Verification email has been resent. Please check your inbox.",
+  }
+}
 
 export const signOutAction = async () => {
   const supabase = await createClient();
