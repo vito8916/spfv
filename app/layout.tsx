@@ -15,8 +15,32 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SupaNext Kit - Next.js + Supabase Starter",
-  description: "A Next.js + Supabase starter starter kit with Tailwind CSS, ShadCn UI, and more. With this kit, you can quickly build a full-stack application with authentication, database, and storage.",
+    title: "Sp Fair Value",
+    description: "A powerful tool for financial analysis and decision-making.",
+    authors: [{name: "NSPRO'S", url: "https://nspros.io"}],
+    openGraph: {
+        title: "Sp Fair Value",
+        description: "A powerful tool for financial analysis and decision-making.",
+        url: "https://spfairvalue.com",
+        siteName: "spfairvalue.com",
+        images: [
+            {
+                url: "/supanext-kit.webp",
+                width: 1200,
+                height: 630,
+                alt: "Sp Fair Value Preview",
+            },
+        ],
+        locale: "en_US",
+        type: "website",
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Sp Fair Value",
+        description: "A powerful tool for financial analysis and decision-making.",
+        images: ["/supanext-kit.webp"],
+    },
+    metadataBase: new URL("https://spfairvalue.com"),
 };
 
 export default function RootLayout({
@@ -32,7 +56,7 @@ export default function RootLayout({
       <ThemeProvider
           attribute="class"
           defaultTheme="light"
-          enableSystem
+          enableSystem={false}
           disableTransitionOnChange
       >
           {children}
