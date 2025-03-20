@@ -4,8 +4,7 @@ import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, Sideba
 import { type NavItem } from '@/types';
 import Link from "next/link";
 import {usePathname} from "next/navigation";
-import {LayoutGrid, UserIcon} from "lucide-react";
-
+import {LayoutGrid, UserIcon, SettingsIcon} from "lucide-react";
 /*
 * Main navigation items
 */
@@ -17,10 +16,16 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
+        title: 'SPFV Tool',
+        url: '/spfv',
+        icon: SettingsIcon,
+    },
+    {
         title: 'Profile',
         url: '/profile',
         icon: UserIcon,
     },
+    
 ];
 
 export function NavMain() {
@@ -30,7 +35,7 @@ export function NavMain() {
             <SidebarGroupLabel>Platform</SidebarGroupLabel>
             <SidebarMenu>
                 {mainNavItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
+                    <SidebarMenuItem key={item.title} >
                         <SidebarMenuButton asChild isActive={item.url === pathname}>
                             <Link href={item.url} prefetch>
                                 {item.icon && <item.icon />}

@@ -1,19 +1,46 @@
-import React from 'react';
+import React from "react";
 import Image from "next/image";
 
 const ImagesCarousel = () => {
-    return (
-        <div className="home-page-image-carousel-item flex-shrink-0 flex justify-around gap-4 min-w-full">
-            <div className="flex-shrink-0 flex justify-around gap-4 min-w-full animate-scroll">
-                <Image width={808} height={487} src="/assets/images/pricing.png" alt="Pricing page illustration"/>
-                <Image width={808} height={487} src="/assets/images/customer-portal.png" alt="Customer portal illustration"/>
-            </div>
-            <div className="flex-shrink-0 flex justify-around gap-4 min-w-full animate-scroll" aria-hidden="true">
-                <Image width={808} height={487} src="/assets/images/pricing.png" alt="Pricing page illustration"/>
-                <Image width={808} height={487} src="/assets/images/customer-portal.png" alt="Customer portal illustration"/>
-            </div>
-        </div>
-    );
+  return (
+    <div className="home-page-image-carousel-item flex-shrink-0 flex justify-around gap-4 min-w-full overflow-x-hidden">
+      <div className="flex-shrink-0 flex justify-around gap-4 min-w-full animate-scroll">
+        <Image
+          className="rounded-t-2xl"
+          width={808}
+          height={487}
+          src="/assets/images/bienvenida.jpg"
+          alt="Pricing page illustration"
+        />
+        <Image
+        className="rounded-t-2xl"
+          width={808}
+          height={487}
+          src="/assets/images/bienvenida.jpg"
+          alt="Customer portal illustration"
+        />
+      </div>
+      <div
+        className="flex-shrink-0 flex justify-around gap-4 min-w-full animate-scroll"
+        aria-hidden="true"
+      >
+        <Image
+          className="rounded-t-2xl"
+          width={808}
+          height={487}
+          src="/assets/images/bienvenida.jpg"
+          alt="Pricing page illustration"
+        />
+        <Image
+          className="rounded-t-2xl"
+          width={808}
+          height={487}
+          src="/assets/images/bienvenida.jpg"
+          alt="Customer portal illustration"
+        />
+      </div>
+    </div>
+  );
 };
 
 export default ImagesCarousel;

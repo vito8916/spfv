@@ -16,7 +16,7 @@ export default async function Home() {
                 <BenefitsSection />
                 <PricingSection />
                 <CTASection />
-                 <ImagesCarousel />
+                <ImagesCarousel />
             </main>
             <Footer />
         </div>

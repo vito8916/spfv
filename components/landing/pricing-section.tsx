@@ -84,7 +84,7 @@ export function PricingSection() {
             <div className="absolute inset-0 bg-[url('/pattern-7.svg')] bg-cover opacity-50"/>
             <div className="relative z-10 container mx-auto px-4">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl font-bold mb-4">Choose Your Plan</h2>
+                    <h2 className="uppercase text-4xl tracking-tight font-extrabold text-gray-800 dark:text-white mb-4">Choose Your Plan</h2>
                     <p className="text-muted-foreground max-w-2xl mx-auto">
                         Select the perfect plan for your trading needs and start maximizing your potential today.
                     </p>
