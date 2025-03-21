@@ -1,40 +1,10 @@
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import Logo from "@/components/logo";
-import { getAuthUser } from "@/app/actions/auth";
 import Image from "next/image";
 import { CTAButton } from "@/components/landing/cta-button";
 export async function HeroSection() {
-  const user = await getAuthUser();
 
   return (
     <div>
       <div className="relative z-10">
-        <header className="container mx-auto px-4 py-6">
-          <nav className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Logo />
-            </div>
-            <div className="flex items-center gap-4">
-              {user ? (
-                <Link href="/dashboard">
-                  <Button variant="ghost">Dashboard</Button>
-                </Link>
-              ) : (
-                <>
-                  <Link href="/sign-in">
-                    <Button variant="ghost">Sign In</Button>
-                  </Link>
-                  <Link href="/sign-up">
-                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                      Get Started
-                    </Button>
-                  </Link>
-                </>
-              )}
-            </div>
-          </nav>
-        </header>
 
         <section className="bg-white dark:bg-gray-900">
           <div className="grid max-w-screen-xl px-4 py-8 mx-auto lg:gap-8 xl:gap-0 lg:py-16 lg:grid-cols-12">

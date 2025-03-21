@@ -14,7 +14,7 @@ export function Footer() {
                   width={44}
                   height={44}
                   alt="sp fair value logo"
-                  className="h-auto w-44 hidden xl:block"
+                  className="h-auto w-44"
                 />
               </Link>
               <address className="text-muted-foreground not-italic">
