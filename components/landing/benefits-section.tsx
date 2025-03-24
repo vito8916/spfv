@@ -51,7 +51,12 @@ export function BenefitsSection() {
           </div>
         </div>
       </section>
-      <section className="bg-white dark:bg-gray-900">
+      <section className="py-10 bg-white dark:bg-gray-900 relative z-10 overflow-hidden">
+        <div className="absolute w-full lg:w-[71%] aspect-[0.618/1] opacity-20 top-[100px] lg:-bottom-[36px] right-[14%] -z-10 rotate-[360deg]">
+          <div className="absolute w-[40%] aspect-[0.325/1] bg-[#e8e7ff] rounded-full blur-[200px]  left-[138px] top-[31px] rotate-12"></div>
+          <div className="absolute w-[40%] aspect-[0.572/1] bg-[#c79d29] rounded-full blur-[200px] left-[222px] top-[208px]"></div>
+          <div className="absolute w-[40%] aspect-[0.571/1] bg-[#ff9c4b] rounded-full blur-[200px] left-[436px] top-[340px]"></div>
+        </div>
         <div className="gap-8 items-center py-8 px-4 mx-auto max-w-screen-xl xl:gap-16 md:grid md:grid-cols-2 sm:py-16 lg:px-6">
           <Image
             className="w-full dark:hidden"
