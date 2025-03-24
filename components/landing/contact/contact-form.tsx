@@ -17,6 +17,7 @@ import {
   FormMessage 
 } from '@/components/ui/form'
 import { toast } from 'sonner'
+import {NextResponse} from "next/server";
 
 export default function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -37,11 +38,25 @@ export default function ContactForm() {
     setIsSubmitting(true)
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      // Log form data to console
-      console.log('Form submitted:', data)
+        const response = await fetch('/api/contact', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            // Handle error response
+            console.error('Error sending message:', result);
+            toast.error(result.message || 'Failed to send message');
+            return NextResponse.json(
+                { error: 'Failed to send message' + result.message },
+                { status: 500 }
+            );
+        }
       
       // Show success state
       setIsSuccess(true)
