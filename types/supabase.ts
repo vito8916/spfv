@@ -24,6 +24,81 @@ export type Database = {
         }
         Relationships: []
       }
+      terms_conditions: {
+        Row: {
+          id: string
+          type: 'terms_of_service' | 'privacy_policy' | 'cookie_policy' | 'acceptable_use_policy'
+          version: string
+          content: string
+          is_active: boolean
+          effective_date: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          type: 'terms_of_service' | 'privacy_policy' | 'cookie_policy' | 'acceptable_use_policy'
+          version: string
+          content: string
+          is_active?: boolean
+          effective_date?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          type?: 'terms_of_service' | 'privacy_policy' | 'cookie_policy' | 'acceptable_use_policy'
+          version?: string
+          content?: string
+          is_active?: boolean
+          effective_date?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_terms_acceptances: {
+        Row: {
+          id: string
+          user_id: string
+          terms_id: string
+          accepted_at: string
+          ip_address: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          terms_id: string
+          accepted_at?: string
+          ip_address?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          terms_id?: string
+          accepted_at?: string
+          ip_address?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_terms_acceptances_terms_id_fkey"
+            columns: ["terms_id"]
+            isOneToOne: false
+            referencedRelation: "terms_conditions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_terms_acceptances_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       subscriptions: {
         Row: {
           cancel_at: string | null
@@ -125,6 +200,7 @@ export type Database = {
         | "past_due"
         | "unpaid"
         | "paused"
+      terms_type: 'terms_of_service' | 'privacy_policy' | 'cookie_policy' | 'acceptable_use_policy'
     }
     CompositeTypes: {
       [_ in never]: never

@@ -1,6 +1,8 @@
 'use client'
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,145 +11,199 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileText, ShieldCheck, Loader2 } from "lucide-react";
-import { agreementsSchema, type AgreementsFormData } from "@/lib/validations/agreements";
+import { getActiveTerms, acceptTerms, getUserTermsAcceptance } from '@/app/actions/terms';
+import { toast } from 'sonner';
+import { z } from 'zod';
+import { useRouter } from 'next/navigation';
 
-interface AgreementsFormProps {
-    onAgreementsAccepted: () => Promise<void>;
-    isLoading: boolean;
+interface TermData {
+    id: string;
+    type: string;
+    content: string;
+    version: string;
 }
 
-const AgreementsForm = ({ onAgreementsAccepted, isLoading }: AgreementsFormProps) => {
-    const form = useForm<AgreementsFormData>({
-        resolver: zodResolver(agreementsSchema),
-        defaultValues: {
-            termsAccepted: false,
-            privacyAccepted: false,
-        },
-        mode: "onChange", // Enable real-time validation
+type FormSchema = z.infer<ReturnType<typeof createAgreementsSchema>>;
+
+// Dynamic schema based on available terms
+const createAgreementsSchema = (terms: TermData[]) => {
+    const schemaFields: Record<string, z.ZodBoolean> = {};
+    terms.forEach(term => {
+        schemaFields[`${term.type}Accepted`] = z.boolean();
+    });
+    return z.object(schemaFields).refine(
+        (data) => Object.values(data).every(value => value === true),
+        {
+            message: "You must accept all agreements to continue"
+        }
+    );
+};
+
+const AgreementsForm = () => {
+    const router = useRouter();
+    const [terms, setTerms] = useState<TermData[]>([]);
+    const [isLoadingTerms, setIsLoadingTerms] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
+    const [schema, setSchema] = useState<z.ZodType<FormSchema>>();
+    
+    // Initialize form with empty schema
+    const form = useForm<FormSchema>({
+        resolver: schema ? zodResolver(schema) : undefined,
+        mode: "onChange",
     });
 
-    // Watch both checkbox values
-    const termsAccepted = form.watch("termsAccepted");
-    const privacyAccepted = form.watch("privacyAccepted");
+    useEffect(() => {
+        const loadTermsAndAcceptances = async () => {
+            try {
+                // Get all active terms
+                const allTerms = await getActiveTerms('all') as TermData[];
+                if (!allTerms?.length) {
+                    throw new Error('No terms found');
+                }
+                setTerms(allTerms);
+
+                // Create dynamic form schema
+                const newSchema = createAgreementsSchema(allTerms);
+                setSchema(newSchema);
+                
+                // Get user's existing acceptances
+                const acceptances = await Promise.all(
+                    allTerms.map(term => getUserTermsAcceptance(term.id))
+                );
+
+                // Set default values based on existing acceptances
+                const defaultValues = Object.fromEntries(
+                    allTerms.map((term, index) => [
+                        `${term.type}Accepted`,
+                        !!acceptances[index]
+                    ])
+                );
+
+                // Reset form with new values
+                form.reset(defaultValues);
+            } catch (error) {
+                console.error('Error loading terms:', error);
+                toast.error('Failed to load agreements. Please try again.');
+            } finally {
+                setIsLoadingTerms(false);
+            }
+        };
+
+        loadTermsAndAcceptances();
+    }, [form]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (termsAccepted && privacyAccepted) {
-            await onAgreementsAccepted();
+        setIsLoading(true);
+
+        // Check if all terms are accepted
+        const formValues = form.getValues();
+        const allAccepted = terms.every(term => formValues[`${term.type}Accepted`]);
+
+        if (!allAccepted) {
+            return;
+        }
+
+        try {
+            // Get the selected plan from localStorage
+            const priceId = localStorage.getItem('selectedPlan');
+            if (!priceId) {
+                toast.error('Please select a subscription plan first');
+                router.push('/account-confirmation');
+                return;
+            }
+
+            // Get existing acceptances to avoid duplicates
+            const existingAcceptances = await Promise.all(
+                terms.map(term => getUserTermsAcceptance(term.id))
+            );
+
+            // Only accept terms that haven't been accepted yet
+            const termsToAccept = terms.filter((term, index) => !existingAcceptances[index]);
+            
+            if (termsToAccept.length > 0) {
+                await Promise.all(
+                    termsToAccept.map(term => acceptTerms(term.id))
+                );
+            }
+
+            // Show success message
+            toast.success('Agreements accepted successfully');
+
+            // Small delay to ensure the toast is seen
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Redirect to OPRA agreements
+            router.push('/opra-agreements');
+        } catch (error) {
+            console.error('Error accepting terms:', error);
+            toast.error('Failed to process agreements. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
+    if (isLoadingTerms || !schema) {
+        return (
+            <div className="flex justify-center items-center min-h-[200px]">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
     return (
         <Form {...form}>
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid gap-6">
-                    {/* Terms and Conditions */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <FileText className="h-5 w-5" />
-                                Terms and Conditions
-                            </CardTitle>
-                            <CardDescription>
-                                Please read our terms and conditions carefully
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <ScrollArea className="h-[200px] w-full rounded-md border p-4">
-                                <div className="text-sm text-muted-foreground">
-                                    <h3 className="font-semibold text-foreground mb-2">1. Introduction</h3>
-                                    <p className="mb-4">
-                                        Welcome to SP Fair Value. By using our service, you agree to these terms. Please read them carefully.
-                                    </p>
-                                    <h3 className="font-semibold text-foreground mb-2">2. Use of Service</h3>
-                                    <p className="mb-4">
-                                        Our service provides financial analysis tools and fair value calculations. You must use these responsibly and in accordance with all applicable laws.
-                                    </p>
-                                    <h3 className="font-semibold text-foreground mb-2">3. Account Terms</h3>
-                                    <p className="mb-4">
-                                        You are responsible for maintaining the security of your account and any activities that occur under your account.
-                                    </p>
-                                    {/* Add more terms as needed */}
-                                </div>
-                            </ScrollArea>
-                        </CardContent>
-                        <CardFooter>
-                            <FormField
-                                control={form.control}
-                                name="termsAccepted"
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                        <FormControl>
-                                            <Checkbox
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                        <div className="space-y-1 leading-none">
-                                            <FormLabel>
-                                                I accept the terms and conditions
-                                            </FormLabel>
-                                            <FormMessage />
-                                        </div>
-                                    </FormItem>
-                                )}
-                            />
-                        </CardFooter>
-                    </Card>
-
-                    {/* Privacy Policy */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <ShieldCheck className="h-5 w-5" />
-                                Privacy Policy
-                            </CardTitle>
-                            <CardDescription>
-                                Learn how we handle your data
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <ScrollArea className="h-[200px] w-full rounded-md border p-4">
-                                <div className="text-sm text-muted-foreground">
-                                    <h3 className="font-semibold text-foreground mb-2">1. Data Collection</h3>
-                                    <p className="mb-4">
-                                        We collect information that you provide directly to us, including account information and usage data.
-                                    </p>
-                                    <h3 className="font-semibold text-foreground mb-2">2. Use of Data</h3>
-                                    <p className="mb-4">
-                                        We use your data to provide and improve our services, communicate with you, and ensure security.
-                                    </p>
-                                    <h3 className="font-semibold text-foreground mb-2">3. Data Protection</h3>
-                                    <p className="mb-4">
-                                        We implement appropriate security measures to protect your personal information.
-                                    </p>
-                                    {/* Add more privacy policy content as needed */}
-                                </div>
-                            </ScrollArea>
-                        </CardContent>
-                        <CardFooter>
-                            <FormField
-                                control={form.control}
-                                name="privacyAccepted"
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                                        <FormControl>
-                                            <Checkbox
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                        <div className="space-y-1 leading-none">
-                                            <FormLabel>
-                                                I accept the privacy policy
-                                            </FormLabel>
-                                            <FormMessage />
-                                        </div>
-                                    </FormItem>
-                                )}
-                            />
-                        </CardFooter>
-                    </Card>
+                    {terms.map((term) => (
+                        <Card key={term.id}>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    {term.type === 'privacy_policy' ? (
+                                        <ShieldCheck className="h-5 w-5" />
+                                    ) : (
+                                        <FileText className="h-5 w-5" />
+                                    )}
+                                    {term.type.split('_').map(word => 
+                                        word.charAt(0).toUpperCase() + word.slice(1)
+                                    ).join(' ')}
+                                </CardTitle>
+                                <CardDescription>
+                                    Version {term.version}
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ScrollArea className="h-[200px] w-full rounded-md border p-4">
+                                    <div className="prose prose-sm dark:prose-invert">
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                            {term.content}
+                                        </ReactMarkdown>
+                                    </div>
+                                </ScrollArea>
+                            </CardContent>
+                            <CardFooter>
+                                <FormField
+                                    control={form.control}
+                                    name={`${term.type}Accepted` as keyof FormSchema}
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                            <FormControl>
+                                                <Checkbox
+                                                    checked={field.value}
+                                                    onCheckedChange={field.onChange}
+                                                />
+                                            </FormControl>
+                                            <div className="space-y-1 leading-none">
+                                                <FormLabel>
+                                                    I accept the {term.type.split('_').join(' ')}
+                                                </FormLabel>
+                                                <FormMessage />
+                                            </div>
+                                        </FormItem>
+                                    )}
+                                />
+                            </CardFooter>
+                        </Card>
+                    ))}
                 </div>
 
                 <div className="flex justify-end">
@@ -155,7 +211,10 @@ const AgreementsForm = ({ onAgreementsAccepted, isLoading }: AgreementsFormProps
                         type="submit" 
                         size="lg"
                         className="min-w-[200px]"
-                        disabled={!termsAccepted || !privacyAccepted || isLoading}
+                        disabled={
+                            isLoading || 
+                            !terms.every(term => form.watch(`${term.type}Accepted` as keyof FormSchema))
+                        }
                     >
                         {isLoading ? (
                             <>
@@ -163,7 +222,9 @@ const AgreementsForm = ({ onAgreementsAccepted, isLoading }: AgreementsFormProps
                                 Processing...
                             </>
                         ) : (
-                            termsAccepted && privacyAccepted ? 'Continue' : 'Accept All Agreements to Continue'
+                            terms.every(term => form.watch(`${term.type}Accepted` as keyof FormSchema))
+                                ? 'Continue' 
+                                : 'Accept All Agreements to Continue'
                         )}
                     </Button>
                 </div>

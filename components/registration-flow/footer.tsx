@@ -40,21 +40,18 @@ const FooterRegistrationFlow = () => {
 
                 {/* Social Links */}
                 <div className="flex items-center gap-4">
-                    {socialLinks.map((link) => {
-                        const Icon = link.icon;
-                        return (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-muted-foreground hover:text-foreground/80"
-                            >
-                                <Icon className="h-4 w-4" />
-                                <span className="sr-only">{link.label}</span>
-                            </Link>
-                        );
-                    })}
+                    <div className="flex mt-4 space-x-6 sm:justify-center sm:mt-0">
+                        {/* TODO: Add social media links */}
+                        <a href="https://x.com/spfairvalue" className="hover:underline">
+                            X
+                        </a>
+                        <a href="https://www.instagram.com/spfairvalue" className="hover:underline">
+                            Instagram
+                        </a>
+                        <a href="https://www.facebook.com/spfairvalue" className="hover:underline">
+                            Facebook
+                        </a>
+                    </div>
                 </div>
             </div>
         </footer>
