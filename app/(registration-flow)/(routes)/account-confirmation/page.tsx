@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { PricingSkeleton } from '@/components/skeletons/pricing-skeleton';
 import { useRouter } from 'next/navigation';
+import { updateRegistrationProgress } from '@/app/actions/registration';
 type Plan = {
     id: string;
     name: string;
@@ -70,9 +71,16 @@ const AccountConfirmationPage = () => {
         fetchPlans();
     }, []);
 
-    const handleContinue = () => {
+    const handleContinue = async () => {
         // Save selected plan to localStorage for the signup process
         localStorage.setItem('selectedPlan', selectedPlan);
+        
+        // Update registration progress
+        const progressResult = await updateRegistrationProgress('account_confirmation');
+        if (!progressResult.success) {
+            throw new Error(progressResult.error);
+        }
+
         // Redirect to additional data page
         router.push('/additional-data'); 
     };
