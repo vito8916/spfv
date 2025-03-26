@@ -15,6 +15,7 @@ import { getActiveTerms, acceptTerms, getUserTermsAcceptance } from '@/app/actio
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
+import { updateRegistrationProgress } from '@/app/actions/registration';
 
 interface TermData {
     id: string;
@@ -125,6 +126,12 @@ const AgreementsForm = () => {
                 await Promise.all(
                     termsToAccept.map(term => acceptTerms(term.id))
                 );
+            }
+
+            // Update registration progress
+            const progressResult = await updateRegistrationProgress('agreements');
+            if (!progressResult.success) {
+                throw new Error(progressResult.error);
             }
 
             // Show success message
