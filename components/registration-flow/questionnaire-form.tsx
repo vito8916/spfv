@@ -29,6 +29,8 @@ import {
 } from "@/lib/validations/questionnaire";
 import { saveQuestionnaireAnswers } from "@/app/actions/questionnaire";
 import { Checkbox } from "@/components/ui/checkbox";
+import { updateRegistrationProgress } from '@/app/actions/registration';
+
 const professionalQuestions = [
   {
     id: "isInvestmentAdvisor",
@@ -126,25 +128,31 @@ const QuestionnaireForm = () => {
     try {
       setIsLoading(true);
 
+      // Save questionnaire answers
       const result = await saveQuestionnaireAnswers(data);
-
       if (!result.success) {
         throw new Error(result.error);
       }
 
-      toast.success("Questionnaire submitted successfully");
+      // Update registration progress
+      const progressResult = await updateRegistrationProgress('questionnaire');
+      if (!progressResult.success) {
+        throw new Error(progressResult.error);
+      }
 
+      toast.success('Questionnaire submitted successfully');
+      
       // Small delay to ensure the toast is seen
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       // Redirect to the next step
-      router.push("/opra-agreements");
+      router.push('/opra-agreements');
     } catch (error) {
-      console.error("Error submitting questionnaire:", error);
+      console.error('Error submitting questionnaire:', error);
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to submit questionnaire. Please try again."
+          : 'Failed to submit questionnaire. Please try again.'
       );
     } finally {
       setIsLoading(false);
