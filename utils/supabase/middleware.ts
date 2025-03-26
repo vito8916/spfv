@@ -1,5 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
+import { getCurrentRegistrationStep, RegistrationStep } from "@/app/actions/registration";
+
+const REGISTRATION_ROUTES = [
+  '/account-confirmation',
+  '/additional-data',
+  '/agreements',
+  '/questionnaire',
+  '/opra-agreements'
+];
 
 export const updateSession = async (request: NextRequest) => {
   // This `try/catch` block is only here for the interactive tutorial.
@@ -39,9 +48,36 @@ export const updateSession = async (request: NextRequest) => {
     const { data: { user } } = await supabase.auth.getUser();
 
     // Define routes
-    const publicRoutes = ['/', '/sign-in', '/sign-up', '/auth/callback', '/additional-data', '/agreements', '/success-payment'];
-    const protectedRoutes = ['/dashboard', '/settings', '/profile', '/account-confirmation'];
+    const publicRoutes = ['/', '/sign-in', '/sign-up', '/auth/callback', '/auth/confirm'];
+    const protectedRoutes = ['/dashboard', '/settings', '/profile'];
     const currentPath = request.nextUrl.pathname;
+
+    // Handle registration flow routes
+    if (REGISTRATION_ROUTES.some(route => currentPath.startsWith(route))) {
+      if (!user) {
+        return NextResponse.redirect(new URL('/sign-in', request.url));
+      }
+
+      // Get current registration progress
+      const { success, currentStep, completedSteps, error } = await getCurrentRegistrationStep();
+
+      if (!success) throw new Error(error);
+
+
+      if (success) {
+        // Convert current route to step type
+        const currentRouteStep = currentPath.substring(1).replace(/-/g, '_') as RegistrationStep;
+        
+        // Check if step is accessible
+        const isCompleted = completedSteps.includes(currentRouteStep);
+        const isCurrent = currentStep === currentRouteStep;
+        if (!isCompleted && !isCurrent) {
+          // Redirect to current step
+          const redirectStep = currentStep.replace(/_/g, '-');
+          return NextResponse.redirect(new URL(`/${redirectStep}`, request.url));
+        }
+      }
+    }
 
     // Check protected routes first
     if (protectedRoutes.some(route => currentPath.startsWith(route))) {
@@ -58,8 +94,11 @@ export const updateSession = async (request: NextRequest) => {
         .single();
 
       // Handle subscription states
-      if (!subscription && currentPath !== '/account-confirmation') {
-        return NextResponse.redirect(new URL('/account-confirmation', request.url));
+      if (!subscription) {
+        const { success, currentStep, error } = await getCurrentRegistrationStep();
+        if (!success) throw new Error(error);
+        const redirectStep = currentStep.replace(/_/g, '-');
+        return NextResponse.redirect(new URL(`/${redirectStep}`, request.url));
       }
 
       if (subscription && subscription.status !== 'active' && !currentPath.startsWith('/settings')) {
