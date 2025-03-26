@@ -106,14 +106,7 @@ const AgreementsForm = () => {
         }
 
         try {
-            // Get the selected plan from localStorage
-            const priceId = localStorage.getItem('selectedPlan');
-            if (!priceId) {
-                toast.error('Please select a subscription plan first');
-                router.push('/account-confirmation');
-                return;
-            }
-
+           
             // Get existing acceptances to avoid duplicates
             const existingAcceptances = await Promise.all(
                 terms.map(term => getUserTermsAcceptance(term.id))
@@ -138,7 +131,7 @@ const AgreementsForm = () => {
             toast.success('Agreements accepted successfully');
 
             // Small delay to ensure the toast is seen
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            //await new Promise(resolve => setTimeout(resolve, 1000));
 
             // Redirect to OPRA agreements
             router.push('/opra-agreements');

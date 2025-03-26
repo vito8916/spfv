@@ -1,10 +1,12 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
+import { cache } from 'react'
+import { revalidatePath } from 'next/cache'
 
 export type TermsType = 'terms_of_service' | 'privacy_policy' | 'cookie_policy' | 'acceptable_use_policy'
 
-export async function getActiveTerms(type?: TermsType | 'all') {
+export const getActiveTerms = cache(async (type?: TermsType | 'all') => {
   const supabase = await createClient()
   
   const query = supabase
@@ -21,9 +23,9 @@ export async function getActiveTerms(type?: TermsType | 'all') {
 
   if (error) throw error
   return type === 'all' ? data : data?.[0]
-}
+})
 
-export async function getUserTermsAcceptance(termsId: string) {
+export const getUserTermsAcceptance = cache(async (termsId: string) => {
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
@@ -38,7 +40,7 @@ export async function getUserTermsAcceptance(termsId: string) {
 
   if (error && error.code !== 'PGRST116') throw error // PGRST116 is "not found"
   return data
-}
+})
 
 export async function acceptTerms(termsId: string) {
   const supabase = await createClient()
@@ -62,10 +64,15 @@ export async function acceptTerms(termsId: string) {
     })
 
   if (error) throw error
+
+  // Revalidate caches after successful acceptance
+  revalidatePath('/agreements')
+  revalidatePath('/opra-agreements')
+  
   return true
 }
 
-export async function getAllUserTermsAcceptances() {
+export const getAllUserTermsAcceptances = cache(async () => {
   const supabase = await createClient()
   
   const { data: { user } } = await supabase.auth.getUser()
@@ -81,4 +88,4 @@ export async function getAllUserTermsAcceptances() {
 
   if (error) throw error
   return data
-} 
+}) 
