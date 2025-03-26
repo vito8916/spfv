@@ -27,6 +27,7 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import AdditionalDataSkeleton from '../skeletons/additional-data-skeleton';
 import { Loader2 } from 'lucide-react';
+import { updateRegistrationProgress } from '@/app/actions/registration';
 
 interface UserInfo {
     fullName: string;
@@ -107,6 +108,12 @@ const AdditionalDataForm = ({ user_info }: AdditionalDataFormProps) => {
 
             if (!response.success) {
                 throw new Error(response.error);
+            }
+
+            // Update registration progress
+            const progressResult = await updateRegistrationProgress('additional_data');
+            if (!progressResult.success) {
+                throw new Error(progressResult.error);
             }
 
             toast.success("Profile updated successfully");
