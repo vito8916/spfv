@@ -1,18 +1,12 @@
 import React from 'react';
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Github, Twitter } from "lucide-react";
 
 const FooterRegistrationFlow = () => {
     const links = [
         { href: "/privacy-policy", label: "Privacy Policy" },
         { href: "/terms-of-service", label: "Terms of Service" },
         { href: "/contact", label: "Contact" },
-    ];
-
-    const socialLinks = [
-        { href: "https://twitter.com/spfairvalue", icon: Twitter, label: "Twitter" },
-        { href: "https://github.com/spfairvalue", icon: Github, label: "GitHub" },
     ];
 
     return (

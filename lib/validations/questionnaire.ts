@@ -16,26 +16,7 @@ export const questionnaireSchema = z.object({
     isAssociatedWithFirm: z.boolean().default(false),
     isAssociatedWithPublicCompany: z.boolean().default(false),
     isAssociatedWithBrokerDealer: z.boolean().default(false),
-}).refine((data) => {
-    // If isNonProfessional is false, all other fields must be defined
-    if (!data.isNonProfessional) {
-        return data.isInvestmentAdvisor !== undefined &&
-            data.isUsingForBusiness !== undefined &&
-            data.isReceivingBenefits !== undefined &&
-            data.isListedAsFinancialProfessional !== undefined &&
-            data.isRegisteredWithRegulator !== undefined &&
-            data.isEngagedInFinancialServices !== undefined &&
-            data.isTradingForOrganization !== undefined &&
-            data.isContractedForPrivateUse !== undefined &&
-            data.isUsingOthersCapital !== undefined &&
-            data.isPerformingRegulatedFunctions !== undefined &&
-            data.isAssociatedWithFirm !== undefined &&
-            data.isAssociatedWithPublicCompany !== undefined &&
-            data.isAssociatedWithBrokerDealer !== undefined;
-    }
-    return true;
-}, {
-    message: "Please answer all questions"
+    isAccurateAndComplete: z.boolean().default(false),
 });
 
 export type QuestionnaireFormData = z.infer<typeof questionnaireSchema>; 
