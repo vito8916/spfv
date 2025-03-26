@@ -7,7 +7,7 @@ const LayoutRegistrationFlow = ({children}: Readonly<{
 }>) => {
     return (
         <>
-            <header>
+            <header className="container mx-auto px-4">
                 <NavbarRegistrationFlow />
             </header>
             <main className="flex flex-col items-center justify-center min-h-screen bg-background-secondary">

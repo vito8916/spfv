@@ -27,6 +27,10 @@ const NavbarRegistrationFlow = () => {
       href: "/agreements",
     },
     {
+      label: "Questionnaire",
+      href: "/questionnaire",
+    },
+    {
       label: "OPRA Agreements",
       href: "/opra-agreements",
     },
