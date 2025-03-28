@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { PricingSkeleton } from '@/components/skeletons/pricing-skeleton';
 import { useRouter } from 'next/navigation';
 import { updateRegistrationProgress } from '@/app/actions/registration';
+import { toast } from 'sonner';
+
 type Plan = {
     id: string;
     name: string;
@@ -27,10 +29,15 @@ const AccountConfirmationPage = () => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchPlans = async () => {
+        const initializePage = async () => {
             try {
                 setIsLoading(true);
                 setError(null);
+
+                // Initialize registration progress
+                await updateRegistrationProgress('account_confirmation');
+
+                // Fetch plans
                 const response = await fetch('/api/stripe/subscription-plans');
                 
                 if (!response.ok) {
@@ -53,7 +60,6 @@ const AccountConfirmationPage = () => {
                     const defaultPlan = data.find((plan: Plan) => 
                         plan.name.toLowerCase().includes('fund-market maker plan')
                     );
-                    // If Fund-Market Maker plan not found, fallback to middle plan
                     if (defaultPlan) {
                         setSelectedPlan(defaultPlan.price_id);
                     } else if (data.length > 0) {
@@ -62,27 +68,33 @@ const AccountConfirmationPage = () => {
                     }
                 }
             } catch (error) {
-                console.error('Error fetching plans:', error);
+                console.error('Error initializing page:', error);
                 setError(error instanceof Error ? error.message : 'Failed to load pricing plans');
             } finally {
                 setIsLoading(false);
             }
         };
-        fetchPlans();
+
+        initializePage();
     }, []);
 
     const handleContinue = async () => {
-        // Save selected plan to localStorage for the signup process
-        localStorage.setItem('selectedPlan', selectedPlan);
-        
-        // Update registration progress
-        const progressResult = await updateRegistrationProgress('account_confirmation');
-        if (!progressResult.success) {
-            throw new Error(progressResult.error);
-        }
+        try {
+            // Save selected plan to localStorage for the signup process
+            localStorage.setItem('selectedPlan', selectedPlan);
+            
+            // Update registration progress to move to next step
+            const progressResult = await updateRegistrationProgress('additional_data');
+            if (!progressResult?.success) {
+                throw new Error(progressResult?.error || 'Failed to create registration progress');
+            }
 
-        // Redirect to additional data page
-        router.push('/additional-data'); 
+            // Redirect to additional data page
+            router.push('/additional-data');
+        } catch (error) {
+            console.error('Error continuing to next step:', error);
+            toast.error(error instanceof Error ? error.message : 'Failed to proceed to next step');
+        }
     };
 
     // Format price helper function
