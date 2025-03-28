@@ -30,6 +30,10 @@ export type User = {
   billing_address: BillingAddress | null;
   payment_method: PaymentMethod | null;
   phone: string | null;
+  user_email: string | null
+  opra_pdf_url: string | null
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
 };
 
 // Validation schemas
@@ -57,6 +61,8 @@ const updateUserSchema = z.object({
   billing_address: billingAddressSchema.optional(),
   payment_method: paymentMethodSchema.optional(),
   phone: z.string().optional(),
+    user_email: z.string().email('Invalid email').optional(),
+    opra_pdf_url: z.string().url('Invalid URL').optional(),
 });
 
 /**
