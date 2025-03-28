@@ -96,8 +96,19 @@ export async function POST(req: Request) {
                         status: mapStripeStatus(subscription.status),
                         quantity: subscription.items.data[0].quantity || 1,
                         cancel_at_period_end: subscription.cancel_at_period_end,
+                        created: new Date(subscription.created * 1000).toISOString(),
                         current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
                         current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                        // Only set these fields if they exist in the Stripe subscription
+                        ...(subscription.ended_at && {
+                            ended_at: new Date(subscription.ended_at * 1000).toISOString(),
+                        }),
+                        ...(subscription.cancel_at && {
+                            cancel_at: new Date(subscription.cancel_at * 1000).toISOString(),
+                        }),
+                        ...(subscription.canceled_at && {
+                            canceled_at: new Date(subscription.canceled_at * 1000).toISOString(),
+                        }),
                         metadata: {
                             stripe_subscription_id: subscription.id,
                             stripe_customer_id: subscription.customer as string,
@@ -125,6 +136,20 @@ export async function POST(req: Request) {
                         console.error('Error updating user billing info:', userError);
                     }
                 }
+
+                // Update user stripe info in Users table
+                const { error: userStripeError } = await supabase
+                    .from('users')
+                    .update({
+                        stripe_customer_id: subscription.customer as string,
+                        stripe_subscription_id: subscription.id,
+                    })
+                    .eq('id', userId);
+
+                if (userStripeError) {
+                    console.error('Error updating user stripe info:', userStripeError);
+                }
+
                 break;
             }
 
@@ -140,6 +165,16 @@ export async function POST(req: Request) {
                         cancel_at_period_end: subscription.cancel_at_period_end,
                         current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
                         current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                        // Only update these fields if they exist in the Stripe subscription
+                        ...(subscription.ended_at && {
+                            ended_at: new Date(subscription.ended_at * 1000).toISOString(),
+                        }),
+                        ...(subscription.cancel_at && {
+                            cancel_at: new Date(subscription.cancel_at * 1000).toISOString(),
+                        }),
+                        ...(subscription.canceled_at && {
+                            canceled_at: new Date(subscription.canceled_at * 1000).toISOString(),
+                        }),
                     })
                     .eq('id', subscription.id);
 

@@ -81,11 +81,11 @@ create table subscriptions
     -- End of the current period that the subscription has been invoiced for. At the end of this period, a new invoice will be created.
     current_period_end   timestamp with time zone default timezone('utc'::text, now()) not null,
     -- If the subscription has ended, the timestamp of the date the subscription ended.
-    ended_at             timestamp with time zone default timezone('utc'::text, now()),
+    ended_at             timestamp with time zone,
     -- A date in the future at which the subscription will automatically get canceled.
-    cancel_at            timestamp with time zone default timezone('utc'::text, now()),
+    cancel_at            timestamp with time zone,
     -- If the subscription has been canceled, the date of that cancellation. If the subscription was canceled with `cancel_at_period_end`, `canceled_at` will still reflect the date of the initial cancellation request, not the end of the subscription period when the subscription is automatically moved to a canceled state.
-    canceled_at          timestamp with time zone default timezone('utc'::text, now()),
+    canceled_at          timestamp with time zone
 );
 alter table subscriptions enable row level security;
 create
