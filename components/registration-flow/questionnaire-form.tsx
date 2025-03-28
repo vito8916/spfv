@@ -29,7 +29,8 @@ import {
 } from "@/lib/validations/questionnaire";
 import { saveQuestionnaireAnswers } from "@/app/actions/questionnaire";
 import { Checkbox } from "@/components/ui/checkbox";
-import { updateRegistrationProgress } from '@/app/actions/registration';
+import { updateRegistrationProgress } from "@/app/actions/registration";
+import { createClient } from "@/utils/supabase/client";
 
 const professionalQuestions = [
   {
@@ -102,6 +103,7 @@ const professionalQuestions = [
 const QuestionnaireForm = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const supabase = createClient();
 
   const form = useForm<QuestionnaireFormData>({
     resolver: zodResolver(questionnaireSchema),
@@ -128,31 +130,68 @@ const QuestionnaireForm = () => {
     try {
       setIsLoading(true);
 
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("No authenticated user found");
+      }
+
       // Save questionnaire answers
       const result = await saveQuestionnaireAnswers(data);
       if (!result.success) {
         throw new Error(result.error);
       }
 
-      // Update registration progress
-      const progressResult = await updateRegistrationProgress('questionnaire');
+      toast.success("Questionnaire submitted successfully");
+
+      // Generate and store PDF based on professional status
+      const pdfEndpoint = data.isNonProfessional 
+        ? "/api/pdf/fill-opra-non-professional" 
+        : "/api/pdf/fill-opra";
+
+      const res = await fetch(pdfEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id }),
+      });
+
+      const response = await res.json();
+
+      if (!res.ok) {
+        throw new Error(response.error || "Failed to generate PDF");
+      }
+
+      // Store PDF URL and show success message with download option
+      localStorage.setItem("opra_pdf_url", response.pdfUrl);
+      toast.success("OPRA Agreement generated successfully", {
+        action: {
+          label: 'Download PDF',
+          onClick: () => {
+            window.open(response.pdfUrl, "_blank");
+          }
+        },
+      });
+
+      // Update registration progress to registration_completed
+      const progressResult = await updateRegistrationProgress("registration_completed");
       if (!progressResult.success) {
         throw new Error(progressResult.error);
       }
 
-      toast.success('Questionnaire submitted successfully');
-      
-      // Small delay to ensure the toast is seen
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      // Show completion message
+      toast.success("Registration process completed!");
+
+      // Small delay to ensure the toasts are seen
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       // Redirect to the next step
-      router.push('/opra-agreements');
+      router.push("/registration-completed");
     } catch (error) {
-      console.error('Error submitting questionnaire:', error);
+      console.error("Error in questionnaire submission:", error);
       toast.error(
         error instanceof Error
           ? error.message
-          : 'Failed to submit questionnaire. Please try again.'
+          : "Failed to submit questionnaire. Please try again."
       );
     } finally {
       setIsLoading(false);

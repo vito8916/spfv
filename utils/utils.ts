@@ -22,3 +22,10 @@ export function formatDate(date: string) {
     year: 'numeric'
   });
 }
+
+export function capitalizeFullName(fullName: string | undefined): string {
+  if (!fullName) return '';
+  return fullName.split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+}

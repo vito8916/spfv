@@ -162,6 +162,10 @@ export type Database = {
           id: string
           payment_method: Json | null
           phone: string | null
+          user_email: string | null
+          opra_pdf_url: string | null
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
         }
         Insert: {
           avatar_url?: string | null

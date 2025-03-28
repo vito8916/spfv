@@ -122,7 +122,7 @@ const AgreementsForm = () => {
             }
 
             // Update registration progress
-            const progressResult = await updateRegistrationProgress('agreements');
+            const progressResult = await updateRegistrationProgress('questionnaire');
             if (!progressResult.success) {
                 throw new Error(progressResult.error);
             }

@@ -111,7 +111,7 @@ const AdditionalDataForm = ({ user_info }: AdditionalDataFormProps) => {
             }
 
             // Update registration progress
-            const progressResult = await updateRegistrationProgress('additional_data');
+            const progressResult = await updateRegistrationProgress('agreements');
             if (!progressResult.success) {
                 throw new Error(progressResult.error);
             }
