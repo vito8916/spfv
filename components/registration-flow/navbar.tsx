@@ -11,7 +11,18 @@ import { signOutAction } from "@/app/actions/auth";
 const NavbarRegistrationFlow = () => {
   const pathname = usePathname();
 
+  // Define the order of registration steps
+  const registrationSteps = [
+    "/account-confirmation",
+    "/additional-data",
+    "/agreements",
+    "/questionnaire",
+    "/registration-completed",
+  ];
 
+  // Get the current step index
+  const currentStepIndex = registrationSteps.indexOf(pathname);
+  console.log("currentStepIndex", currentStepIndex);
 
   const navItems = [
     {
@@ -46,24 +57,34 @@ const NavbarRegistrationFlow = () => {
 
         {/* Navigation Steps */}
         <div className="hidden md:flex items-center space-x-6">
-          {navItems.map((item, index) => (
-            <div key={item.href} className="flex items-center">
-              {index > 0 && (
-                <div className="h-px w-8 bg-muted-foreground/20 mx-2" />
-              )}
-              <Link
-                href={item.href}
-                className={cn(
-                  "relative text-sm transition-colors hover:text-foreground/80",
-                  pathname === item.href
-                    ? "text-foreground font-semibold after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary"
-                    : "text-foreground/60"
+          {navItems.map((item, index) => {
+            const isDisabled = index < currentStepIndex || index > currentStepIndex ;
+            return (
+              <div key={item.href} className="flex items-center">
+                {index > 0 && (
+                  <div className="h-px w-8 bg-muted-foreground/20 mx-2" />
                 )}
-              >
-                {item.label}
-              </Link>
-            </div>
-          ))}
+                <Link
+                  href={isDisabled ? "#" : item.href}
+                  onClick={(e) => {
+                    if (isDisabled) {
+                      e.preventDefault();
+                      console.log("isDisabled", isDisabled);
+                    }
+                  }}
+                  className={cn(
+                    "relative text-sm transition-colors hover:text-foreground/80",
+                    pathname === item.href
+                      ? "text-foreground font-semibold after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary"
+                      : "text-foreground/60",
+                    isDisabled && "pointer-events-none opacity-50"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              </div>
+            );
+          })}
         </div>
 
         {/* Logout Button */}

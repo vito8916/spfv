@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import {
@@ -31,6 +31,7 @@ import { saveQuestionnaireAnswers } from "@/app/actions/questionnaire";
 import { Checkbox } from "@/components/ui/checkbox";
 import { updateRegistrationProgress } from "@/app/actions/registration";
 import { createClient } from "@/utils/supabase/client";
+import QuestionnaireSkeleton from "@/components/skeletons/questionnaire-skeleton";
 
 const professionalQuestions = [
   {
@@ -100,11 +101,15 @@ const professionalQuestions = [
   },
 ];
 
+
+
 const QuestionnaireForm = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isFormReady, setIsFormReady] = useState(false);
   const supabase = createClient();
 
+  // Initialize form with default values
   const form = useForm<QuestionnaireFormData>({
     resolver: zodResolver(questionnaireSchema),
     defaultValues: {
@@ -126,6 +131,38 @@ const QuestionnaireForm = () => {
     },
   });
 
+  useEffect(() => {
+    const storedAnswers = localStorage.getItem('questionnaireAnswers');
+    
+    if (storedAnswers) {
+      try {
+        const parsedAnswers = JSON.parse(storedAnswers);
+        const formattedAnswers = Object.fromEntries(
+          Object.entries(parsedAnswers).map(([key, value]) => {
+            return [key, typeof value === 'string' ? value === 'true' : value];
+          })
+        );
+        form.reset(formattedAnswers);
+      } catch (error) {
+        console.error('Error parsing stored questionnaire answers:', error);
+        localStorage.removeItem('questionnaireAnswers');
+      }
+    }
+    
+    // Set form as ready after loading stored answers
+    setIsFormReady(true);
+  }, [form]);
+
+  useEffect(() => {
+    const subscription = form.watch((values) => {
+      if (values) {
+        localStorage.setItem('questionnaireAnswers', JSON.stringify(values));
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form, form.watch]);
+
   const onSubmit = async (data: QuestionnaireFormData) => {
     try {
       setIsLoading(true);
@@ -141,6 +178,9 @@ const QuestionnaireForm = () => {
       if (!result.success) {
         throw new Error(result.error);
       }
+
+      // Clear stored answers after successful submission
+      localStorage.removeItem('questionnaireAnswers');
 
       toast.success("Questionnaire submitted successfully");
 
@@ -198,7 +238,7 @@ const QuestionnaireForm = () => {
     }
   };
 
-  return (
+  return isFormReady ? (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <Card>
@@ -221,10 +261,10 @@ const QuestionnaireForm = () => {
                   </FormLabel>
                   <FormControl>
                     <RadioGroup
-                      onValueChange={(value) =>
-                        field.onChange(value === "true")
-                      }
-                      defaultValue={field.value ? "true" : "false"}
+                      onValueChange={(value) => {
+                        field.onChange(value === "true");
+                      }}
+                      value={field.value ? "true" : "false"}
                       className="flex flex-col space-y-1"
                     >
                       <FormItem className="flex items-center space-x-3 space-y-0">
@@ -269,7 +309,7 @@ const QuestionnaireForm = () => {
                         onValueChange={(value) =>
                           field.onChange(value === "true")
                         }
-                        defaultValue="false"
+                        value={field.value ? "true" : "false"}
                         className="flex flex-col space-y-1"
                       >
                         <FormItem className="flex items-center space-x-3 space-y-0">
@@ -338,6 +378,8 @@ const QuestionnaireForm = () => {
         </div>
       </form>
     </Form>
+  ) : (
+    <QuestionnaireSkeleton />
   );
 };
 

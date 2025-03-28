@@ -75,8 +75,7 @@ const AgreementsForm = () => {
                 // Set default values based on existing acceptances
                 const defaultValues = Object.fromEntries(
                     allTerms.map((term, index) => [
-                        `${term.type}Accepted`,
-                        !!acceptances[index]
+                        `${term.type}Accepted`, !!acceptances[index]
                     ])
                 );
 
