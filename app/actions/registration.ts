@@ -7,17 +7,15 @@ export type RegistrationStep =
     | 'additional_data'
     | 'agreements'
     | 'questionnaire'
-    | 'opra_agreements'
-    | 'completed';
+    | 'registration_completed';
 
-const STEP_ORDER: RegistrationStep[] = [
+/* const STEP_ORDER: RegistrationStep[] = [
     'account_confirmation',
     'additional_data',
     'agreements',
     'questionnaire',
-    'opra_agreements',
-    'completed'
-];
+    'registration_completed'
+]; */
 
 export async function getCurrentRegistrationStep() {
     try {
@@ -53,7 +51,6 @@ export async function updateRegistrationProgress(step: RegistrationStep) {
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError || !user) throw new Error('Not authenticated');
 
-        // Get current progress
         const { data: currentProgress, error: progressError } = await supabase
             .from('registration_progress')
             .select('current_step, completed_steps')
@@ -63,55 +60,27 @@ export async function updateRegistrationProgress(step: RegistrationStep) {
         if (progressError) throw progressError;
         if (!currentProgress) throw new Error('Registration progress not found');
 
-        // Update completed steps
-        const completedSteps = Array.from(new Set([
-            ...currentProgress.completed_steps,
-            currentProgress.current_step
-        ]));
-
-        // Determine next step
-        const currentStepIndex = STEP_ORDER.indexOf(step);
-        const nextStep = STEP_ORDER[currentStepIndex + 1] || 'completed';
-
-        // Update progress
+        //update the current step to the step passed in
         const { error: updateError } = await supabase
             .from('registration_progress')
-            .update({
-                current_step: nextStep,
-                completed_steps: completedSteps,
-                ...(nextStep === 'completed' ? { completed_at: new Date().toISOString() } : {})
-            })
+            .update({ current_step: step, completed_steps: [...currentProgress.completed_steps, step] })
             .eq('id', user.id);
 
         if (updateError) throw updateError;
 
-        return { success: true, nextStep };
+        if(step === 'registration_completed') {
+            const { error: updateCompletedError } = await supabase
+                .from('registration_progress')
+                .update({ completed_at: new Date().toISOString() })
+                .eq('id', user.id);
+                
+            if (updateCompletedError) throw updateCompletedError;
+        }
+
+        return { success: true };
     } catch (error) {
         console.error('Error updating registration progress:', error);
         return { success: false, error: 'Failed to update registration progress' };
     }
 }
 
-export async function isStepAccessible(step: RegistrationStep) {
-    try {
-        const { success, currentStep, completedSteps, error } = await getCurrentRegistrationStep();
-        if (!success) throw new Error(error);
-
-        const stepIndex = STEP_ORDER.indexOf(step);
-        const currentStepIndex = STEP_ORDER.indexOf(currentStep);
-
-        // Allow access if:
-        // 1. Step is completed
-        // 2. Step is current
-        // 3. Step is immediately next
-        return {
-            success: true,
-            isAccessible: completedSteps.includes(step) ||
-                         step === currentStep ||
-                         stepIndex === currentStepIndex + 1
-        };
-    } catch (error) {
-        console.error('Error checking step accessibility:', error);
-        return { success: false, error: 'Failed to check step accessibility' };
-    }
-} 
