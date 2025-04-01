@@ -22,8 +22,17 @@ export function AppSidebarHeader() {
         // Skip the first empty string from the split
         const segments = pathname.split('/').filter(Boolean);
         
+        // Special case mapping for familiar paths
+        const pathMapping: Record<string, string> = {
+            'dashboard': 'Dashboard',
+            'spfv': 'Fair Value Tool',
+            'profile': 'Profile',
+            'analytics': 'Analytics',
+            'reports': 'Reports'
+        };
+        
         if (segments.length === 0) {
-            return [{ label: 'Dashboard', path: '/dashboard', isCurrentPage: true }];
+            return [{ label: 'Fair Value Dashboard', path: '/dashboard', isCurrentPage: true }];
         }
         
         // Create breadcrumb items from path segments
@@ -31,8 +40,8 @@ export function AppSidebarHeader() {
             // Build the path up to this segment
             const path = `/${segments.slice(0, index + 1).join('/')}`;
             
-            // Format the segment for display (capitalize, replace hyphens with spaces)
-            const label = segment
+            // Use mapped name if available
+            const label = pathMapping[segment] || segment
                 .replace(/-/g, ' ')
                 .replace(/^\w/, c => c.toUpperCase())
                 .replace(/\b\w/g, c => c.toUpperCase());
@@ -54,7 +63,7 @@ export function AppSidebarHeader() {
                         {/* Always show Dashboard as the first item */}
                         <BreadcrumbItem className="hidden md:block">
                             <BreadcrumbLink asChild>
-                                <Link href="/dashboard">Dashboard</Link>
+                                <Link href="/dashboard">Fair Value</Link>
                             </BreadcrumbLink>
                         </BreadcrumbItem>
                         
@@ -65,17 +74,20 @@ export function AppSidebarHeader() {
                         
                         {/* Map through breadcrumb items */}
                         {breadcrumbs.map((breadcrumb, index) => (
-                            <BreadcrumbItem key={breadcrumb.path}>
+                            <div key={breadcrumb.path} className="flex items-center gap-2">
                                 {index > 0 && <BreadcrumbSeparator className="hidden md:block" />}
-                                
+                                <BreadcrumbItem>
+                                    
+                                    
                                 {breadcrumb.isCurrentPage ? (
                                     <BreadcrumbPage>{breadcrumb.label}</BreadcrumbPage>
                                 ) : (
                                     <BreadcrumbLink asChild>
                                         <Link href={breadcrumb.path}>{breadcrumb.label}</Link>
                                     </BreadcrumbLink>
-                                )}
-                            </BreadcrumbItem>
+                                    )}
+                                </BreadcrumbItem>
+                            </div>
                         ))}
                     </BreadcrumbList>
                 </Breadcrumb>

@@ -4,7 +4,7 @@ import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, Sideba
 import { type NavItem } from '@/types';
 import Link from "next/link";
 import {usePathname} from "next/navigation";
-import {LayoutGrid, UserIcon, SettingsIcon} from "lucide-react";
+import {LayoutGrid, UserIcon, Calculator, BarChart, FileText} from "lucide-react";
 /*
 * Main navigation items
 */
@@ -16,23 +16,32 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'SPFV Tool',
+        title: 'Fair Value Tool',
         url: '/spfv',
-        icon: SettingsIcon,
+        icon: Calculator,
+    },
+    {
+        title: 'Analytics',
+        url: '/analytics',
+        icon: BarChart,
+    },
+    {
+        title: 'Reports',
+        url: '/reports',
+        icon: FileText,
     },
     {
         title: 'Profile',
         url: '/profile',
         icon: UserIcon,
     },
-    
 ];
 
 export function NavMain() {
     const pathname = usePathname();
     return (
         <SidebarGroup className="px-2 py-0">
-            <SidebarGroupLabel>Platform</SidebarGroupLabel>
+            <SidebarGroupLabel>Fair Value Platform</SidebarGroupLabel>
             <SidebarMenu>
                 {mainNavItems.map((item) => (
                     <SidebarMenuItem key={item.title} >
