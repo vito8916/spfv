@@ -57,26 +57,26 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
         </div>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead colSpan={4} className="text-center bg-muted/30">Calls</TableHead>
-                <TableHead rowSpan={2} className="text-center bg-primary/10 font-bold w-[100px]">Strike</TableHead>
-                <TableHead colSpan={4} className="text-center bg-muted/30">Puts</TableHead>
+        <div className="relative max-h-[600px] overflow-auto rounded-md border">
+          <Table className="relative">
+            <TableHeader className="sticky top-0 z-10">
+              <TableRow className="bg-background hover:bg-background">
+                <TableHead colSpan={4} className="text-center bg-muted/30 border-b">Calls</TableHead>
+                <TableHead rowSpan={2} className="text-center bg-primary/10 font-bold w-[100px] border-b">Strike</TableHead>
+                <TableHead colSpan={4} className="text-center bg-muted/30 border-b">Puts</TableHead>
               </TableRow>
-              <TableRow>
+              <TableRow className="bg-background hover:bg-background">
                 {/* Call columns */}
-                <TableHead className="text-center">IV</TableHead>
-                <TableHead className="text-center">CHNG</TableHead>
-                <TableHead className="text-center">BID</TableHead>
-                <TableHead className="text-center">ASK</TableHead>
+                <TableHead className="text-center bg-muted/30">IV</TableHead>
+                <TableHead className="text-center bg-muted/30">CHNG</TableHead>
+                <TableHead className="text-center bg-muted/30">BID</TableHead>
+                <TableHead className="text-center bg-muted/30">ASK</TableHead>
                 {/* Strike is in the middle */}
                 {/* Put columns */}
-                <TableHead className="text-center">BID</TableHead>
-                <TableHead className="text-center">ASK</TableHead>
-                <TableHead className="text-center">CHNG</TableHead>
-                <TableHead className="text-center">IV</TableHead>
+                <TableHead className="text-center bg-muted/30">BID</TableHead>
+                <TableHead className="text-center bg-muted/30">ASK</TableHead>
+                <TableHead className="text-center bg-muted/30">CHNG</TableHead>
+                <TableHead className="text-center bg-muted/30">IV</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -98,12 +98,9 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                 const callChange = calculateChange(callOption.last || 0, callOption.prevClose || 0);
                 const putChange = calculateChange(putOption.last || 0, putOption.prevClose || 0);
                 
-                // Determine if strike is near the money (within 5% of underlying price)
-                //const isNearTheMoney = Math.abs(strike - underlyingPrice) / underlyingPrice < 0.05;
                 // Highlight calls with strike < underlying and puts with strike > underlying
                 const isCallInTheMoney = strike < underlyingPrice;
                 const isPutInTheMoney = strike > underlyingPrice;
-                
                 
                 return (
                   <TableRow 
