@@ -4,7 +4,7 @@ import { SidebarGroup, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, Sideba
 import { type NavItem } from '@/types';
 import Link from "next/link";
 import {usePathname} from "next/navigation";
-import {LayoutGrid, UserIcon, Calculator, BarChart, FileText} from "lucide-react";
+import {LayoutGrid, UserIcon, Calculator} from "lucide-react";
 /*
 * Main navigation items
 */
@@ -20,7 +20,7 @@ const mainNavItems: NavItem[] = [
         url: '/spfv',
         icon: Calculator,
     },
-    {
+    /* {
         title: 'Analytics',
         url: '/analytics',
         icon: BarChart,
@@ -29,7 +29,7 @@ const mainNavItems: NavItem[] = [
         title: 'Reports',
         url: '/reports',
         icon: FileText,
-    },
+    }, */
     {
         title: 'Profile',
         url: '/profile',
