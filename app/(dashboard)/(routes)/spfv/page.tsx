@@ -3,16 +3,30 @@ import { getAuthUser } from "@/app/actions/auth";
 import { getActiveSubscription } from "@/app/actions/subscriptions";
 import { redirect } from "next/navigation";
 import { User } from "@supabase/supabase-js";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Calculator, FileText, Lock, ChevronRight, Check, XCircle, Clock } from "lucide-react";
+import {
+  AlertCircle,
+  Calculator,
+  FileText,
+  Lock,
+  ChevronRight,
+  Check,
+  XCircle,
+  Clock,
+} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { formatDate } from "@/utils/utils";
 import Link from "next/link";
+import SpfvIconTool from "@/components/shared/spfv-icon-tool";
 
-
-  
 // Loading component
 function SPFVToolSkeleton() {
   return (
@@ -32,18 +46,21 @@ async function SPFVContent({ user }: { user: User }) {
   // Get subscription data
   const { subscription } = await getActiveSubscription(user.id);
   const isUnsubscribed = subscription?.cancel_at_period_end === true;
-  
+
   // Check if subscription is still in active period even if canceled
   const currentDate = new Date();
-  const periodEndDate = subscription?.current_period_end ? new Date(subscription.current_period_end) : null;
-  const isWithinActivePeriod = periodEndDate ? currentDate < periodEndDate : false;
-  
+  const periodEndDate = subscription?.current_period_end
+    ? new Date(subscription.current_period_end)
+    : null;
+  const isWithinActivePeriod = periodEndDate
+    ? currentDate < periodEndDate
+    : false;
+
   // User has access if subscription is active and within active period (even if unsubscribed)
-  const hasAccess = subscription?.status === 'active' && isWithinActivePeriod;
+  const hasAccess = subscription?.status === "active" && isWithinActivePeriod;
 
   return (
     <>
-      
       {/* Subscription check card - shown only when not actively subscribed */}
       {!hasAccess && (
         <div className="p-4 border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900 rounded-lg mb-6">
@@ -52,7 +69,9 @@ async function SPFVContent({ user }: { user: User }) {
               <Lock className="h-5 w-5 text-amber-600" />
             </div>
             <div>
-              <h3 className="font-medium text-amber-800 dark:text-amber-400">Premium Access Required</h3>
+              <h3 className="font-medium text-amber-800 dark:text-amber-400">
+                Premium Access Required
+              </h3>
               <p className="text-sm text-amber-700 dark:text-amber-500 mt-1">
                 {isUnsubscribed && !isWithinActivePeriod
                   ? "Your subscription has ended. Renew now to regain access to Fair Value tools."
@@ -89,34 +108,26 @@ async function SPFVContent({ user }: { user: User }) {
 
       {/* Tools Grid */}
       <div className="grid gap-4 md:grid-cols-2 mb-6">
-        <Card className={`border overflow-hidden shadow hover:shadow-md transition-all duration-300 ${!hasAccess ? "opacity-75 pointer-events-none" : ""}`}>
-          <div className="absolute h-1 inset-x-0 top-0 bg-primary"></div>
+        <Card
+          className={`relative min-h-[250px] max-w-[400px] justify-between border overflow-hidden shadow hover:shadow-md transition-all duration-300 ${
+            !hasAccess ? "opacity-75 pointer-events-none" : ""
+          }`}
+        >
+          {/* <div className="absolute h-1 inset-x-0 top-0 bg-primary"></div> */}
           <CardHeader>
             <div className="flex items-start justify-between">
               <div>
-                <CardTitle>SP Fair Value Calculator</CardTitle>
-                <CardDescription>Calculate SP fair values for stocks and assets</CardDescription>
+                <CardTitle className="text-2xl font-bold text-primary">SP Fair Value Calculator</CardTitle>
+                <CardDescription>
+                Calculates fair value for options based on historical data and relevant underlying conditions
+                </CardDescription>
               </div>
               <div className="rounded-full bg-primary/10 p-2">
-                <Calculator className="h-5 w-5 text-primary" />
+                <SpfvIconTool />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2 mb-4">
-              <li className="flex items-center text-sm">
-                <div className="h-1.5 w-1.5 rounded-full bg-primary mr-2"></div>
-                DCF Model Analysis
-              </li>
-              <li className="flex items-center text-sm">
-                <div className="h-1.5 w-1.5 rounded-full bg-primary mr-2"></div>
-                Comparable Company Analysis
-              </li>
-              <li className="flex items-center text-sm">
-                <div className="h-1.5 w-1.5 rounded-full bg-primary mr-2"></div>
-                Precedent Transaction Analysis
-              </li>
-            </ul>
             <Link href="/spfv/calculator" className="w-full">
               <button className="flex items-center justify-center w-full text-sm bg-primary/10 text-primary hover:bg-primary/20 px-3 py-2 rounded-md font-medium mt-2">
                 Launch Tool
@@ -133,13 +144,19 @@ async function SPFVContent({ user }: { user: User }) {
       </div>
 
       {/* Recent Reports */}
-      <Card className={`border overflow-hidden shadow hover:shadow-md transition-all duration-300 ${!hasAccess ? "opacity-75 pointer-events-none" : ""}`}>
+      {/* <Card
+        className={`border overflow-hidden shadow hover:shadow-md transition-all duration-300 ${
+          !hasAccess ? "opacity-75 pointer-events-none" : ""
+        }`}
+      >
         <div className="absolute h-1 inset-x-0 top-0 bg-primary"></div>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Recent Reports</CardTitle>
-              <CardDescription>Your previously generated Fair Value reports</CardDescription>
+              <CardDescription>
+                Your previously generated Fair Value reports
+              </CardDescription>
             </div>
             {hasAccess && !isUnsubscribed ? (
               <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20 border-green-500/20">
@@ -147,14 +164,18 @@ async function SPFVContent({ user }: { user: User }) {
               </Badge>
             ) : hasAccess && isUnsubscribed ? (
               <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20">
-                <Clock className="mr-1 h-3 w-3" /> Access until {formatDate(subscription?.current_period_end)}
+                <Clock className="mr-1 h-3 w-3" /> Access until{" "}
+                {formatDate(subscription?.current_period_end)}
               </Badge>
             ) : isUnsubscribed ? (
               <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20">
                 <XCircle className="mr-1 h-3 w-3" /> Unsubscribed
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-amber-600 border-amber-300">
+              <Badge
+                variant="outline"
+                className="text-amber-600 border-amber-300"
+              >
                 <AlertCircle className="mr-1 h-3 w-3" /> Subscription Required
               </Badge>
             )}
@@ -173,10 +194,10 @@ async function SPFVContent({ user }: { user: User }) {
                     Example Fair Value analysis report
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date().toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
+                    {new Date().toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
                     })}
                   </p>
                 </div>
@@ -187,7 +208,8 @@ async function SPFVContent({ user }: { user: User }) {
               </div>
               {isUnsubscribed && (
                 <p className="text-xs text-amber-600 text-center">
-                  Access to reports until {formatDate(subscription?.current_period_end)}
+                  Access to reports until{" "}
+                  {formatDate(subscription?.current_period_end)}
                 </p>
               )}
             </div>
@@ -195,20 +217,22 @@ async function SPFVContent({ user }: { user: User }) {
             <div className="flex items-center justify-center h-[200px]">
               <div className="text-center max-w-md px-4">
                 <Lock className="h-8 w-8 mx-auto mb-2 text-amber-500" />
-                <h3 className="text-md font-medium mb-1">Subscription Required</h3>
+                <h3 className="text-md font-medium mb-1">
+                  Subscription Required
+                </h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  {isUnsubscribed 
-                    ? 'Your subscription has ended. Renew now to regain access to Fair Value reports.'
-                    : 'Upgrade your account to access Fair Value reports and analytics.'}
+                  {isUnsubscribed
+                    ? "Your subscription has ended. Renew now to regain access to Fair Value reports."
+                    : "Upgrade your account to access Fair Value reports and analytics."}
                 </p>
                 <button className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium">
-                  {isUnsubscribed ? 'Renew Now' : 'Upgrade Now'}
+                  {isUnsubscribed ? "Renew Now" : "Upgrade Now"}
                 </button>
               </div>
             </div>
           )}
         </CardContent>
-      </Card>
+      </Card> */}
     </>
   );
 }
@@ -225,9 +249,9 @@ export default async function SpFvToolPage() {
     <div className="container mx-auto py-10 px-4">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Fair Value Tools</h1>
+          <h1 className="text-3xl font-bold">SP Fair Value Tool - pre-launch</h1>
           <p className="text-muted-foreground">
-            Comprehensive Fair Value analytics and calculation tools
+            Comprehensive Fair Value analytics and calculation tool.
           </p>
         </div>
       </div>
