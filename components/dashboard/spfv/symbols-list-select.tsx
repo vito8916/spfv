@@ -1,6 +1,7 @@
 import { FormControl } from '@/components/ui/form'
 import { Select, SelectValue, SelectTrigger, SelectItem, SelectContent } from '@/components/ui/select'
 import React from 'react'
+import { FieldValues } from 'react-hook-form'
 
 const symbols = [
     { value: 'AAPL', label: 'AAPL' },
@@ -10,7 +11,7 @@ const symbols = [
     { value: 'TSLA', label: 'TSLA' },
 ]
 
-export default function SymbolsListSelect({ field }: { field: any}) {
+export default function SymbolsListSelect({ field }: { field: FieldValues}) {
       
   return (
     <div>

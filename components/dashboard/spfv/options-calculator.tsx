@@ -203,7 +203,10 @@ export function OptionsCalculator() {
                             selected={field.value}
                             onSelect={field.onChange}
                             initialFocus
-                            disabled={(date) => date < new Date()}
+                            disabled={(date) => {
+                              const dayOfWeek = date.getDay();
+                              return dayOfWeek !== 5; // 5 is Friday
+                            }}
                           />
                         </PopoverContent>
                       </Popover>
