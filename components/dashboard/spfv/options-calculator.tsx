@@ -1,9 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format } from "date-fns"
@@ -17,7 +15,6 @@ import { optionsCalculatorSchema, type OptionsCalculatorFormValues } from "@/lib
 import { toast } from "sonner"
 import { OptionsResultsTable } from "./options-results-table"
 import SymbolsListSelect from "./symbols-list-select"
-
 
 interface OptionData {
   strikePrice: number;
@@ -65,15 +62,12 @@ export function OptionsCalculator() {
   const [putOptions, setPutOptions] = useState<OptionData[]>([])
   const [underlyingPrice, setUnderlyingPrice] = useState<number>(0)
   const [showResults, setShowResults] = useState(false)
-     
 
   // Initialize form with React Hook Form and Zod resolver
   const form = useForm<OptionsCalculatorFormValues>({
     resolver: zodResolver(optionsCalculatorSchema),
     defaultValues: {
       symbol: "",
-      desiredStrike: 0,
-      nearTheMoney: false,
       optionType: "both",
       strikeCount: "20"
     }
@@ -94,15 +88,6 @@ export function OptionsCalculator() {
         callOrPut: "both", 
         strikeCount: data.strikeCount
       })
-
-      // Add optional parameters
-      if (data.desiredStrike) {
-        params.append('desiredStrike', data.desiredStrike.toString())
-      }
-      
-      if (data.nearTheMoney) {
-        params.append('nearTheMoney', 'true')
-      }
       
       const response = await fetch(`/api/spfv/get-calls-puts?${params}`)
       
@@ -162,7 +147,7 @@ export function OptionsCalculator() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-center">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-center">
                 {/* Symbol */}
                 <FormField
                   control={form.control}
@@ -211,44 +196,6 @@ export function OptionsCalculator() {
                         </PopoverContent>
                       </Popover>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Strike Price */}
-                <FormField
-                  control={form.control}
-                  name="desiredStrike"
-                  render={({ field }) => (
-                    <FormItem className="lg:col-span-1">
-                      <FormLabel>Desired Strike</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="0.00" 
-                          {...field}
-                          value={field.value || 0}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Near The Money */}
-                <FormField
-                  control={form.control}
-                  name="nearTheMoney"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-end space-x-2 lg:col-span-1">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormLabel className="!mt-0">Near the Money</FormLabel>
                     </FormItem>
                   )}
                 />
