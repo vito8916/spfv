@@ -205,7 +205,7 @@ export function OptionsCalculator() {
                             initialFocus
                             disabled={(date) => {
                               const dayOfWeek = date.getDay();
-                              return dayOfWeek !== 5; // 5 is Friday
+                              return dayOfWeek !== 5;
                             }}
                           />
                         </PopoverContent>

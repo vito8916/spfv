@@ -29,3 +29,24 @@ export function capitalizeFullName(fullName: string | undefined): string {
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
 }
+
+export function isFriday(date: Date): boolean {
+  const dayOfWeek = date.getDay();
+  return dayOfWeek === 5; // 5 is Friday
+}
+
+//get the fridays that are bank holidays in the US from 2024 to 2028
+/* export function getFridaysThatAreBankHolidays(year: number): Date[] {
+  const fridays = [];
+  for (let i = 0; i < 5; i++) {
+    const date = new Date(year, 0, 1);
+    date.setDate(date.getDate() + i);
+    if (isFriday(date) && !isBankHoliday(date)) {
+      fridays.push(date);
+    }
+  }
+  return fridays;
+} */
+
+
+
