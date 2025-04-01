@@ -7,10 +7,6 @@ export const optionsCalculatorSchema = z.object({
   expirationDate: z.date({
     required_error: "Please select an expiration date",
   }),
-  desiredStrike: z.coerce.number({
-    required_error: "Please enter a strike price",
-  }).positive("Strike price must be positive"),
-  nearTheMoney: z.boolean().default(false),
   optionType: z.enum(["call", "put", "both"], {
     required_error: "Please select an option type",
   }).default("both"),
