@@ -36,7 +36,7 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
       ...callOptions.map(option => option.strikePrice),
       ...putOptions.map(option => option.strikePrice)
     ])
-  ).sort((a, b) => b - a); // Sort from highest to lowest
+  ).sort((a, b) => a - b); // Sort from lowest to highest
 
   return (
     <Card className="mt-6">
@@ -99,44 +99,67 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                 const putChange = calculateChange(putOption.last || 0, putOption.prevClose || 0);
                 
                 // Determine if strike is near the money (within 5% of underlying price)
-                const isNearTheMoney = Math.abs(strike - underlyingPrice) / underlyingPrice < 0.05;
+                //const isNearTheMoney = Math.abs(strike - underlyingPrice) / underlyingPrice < 0.05;
+                // Highlight calls with strike < underlying and puts with strike > underlying
+                const isCallInTheMoney = strike < underlyingPrice;
+                const isPutInTheMoney = strike > underlyingPrice;
+                
                 
                 return (
                   <TableRow 
                     key={strike} 
                     className={cn(
-                      index % 2 === 0 ? "bg-muted/50" : "",
-                      isNearTheMoney ? "bg-red-500/90" : ""
+                      index % 2 === 0 ? "bg-muted/20" : "",
                     )}
                   >
                     {/* Call side */}
-                    <TableCell className="text-center">
+                    <TableCell className={cn(
+                      "text-center",
+                      isCallInTheMoney ? "bg-primary/10" : ""
+                    )}>
                       {callOption.volatility ? `${callOption.volatility.toFixed(2)}%` : "-"}
                     </TableCell>
                     <TableCell className={cn(
                       "text-center",
+                      isCallInTheMoney ? "bg-primary/10" : "",
                       callChange > 0 ? "text-green-600" : callChange < 0 ? "text-red-600" : ""
                     )}>
                       {callChange !== 0 ? callChange.toFixed(2) : "-"}
                     </TableCell>
-                    <TableCell className="text-center">{callOption.bid ? callOption.bid.toFixed(2) : "-"}</TableCell>
-                    <TableCell className="text-center">{callOption.ask ? callOption.ask.toFixed(2) : "-"}</TableCell>
+                    <TableCell className={cn(
+                      "text-center",
+                      isCallInTheMoney ? "bg-primary/10" : ""
+                    )}>{callOption.bid ? callOption.bid.toFixed(2) : "-"}</TableCell>
+                    <TableCell className={cn(
+                      "text-center",
+                      isCallInTheMoney ? "bg-primary/10" : ""
+                    )}>{callOption.ask ? callOption.ask.toFixed(2) : "-"}</TableCell>
                     
                     {/* Strike price (middle column) */}
-                    <TableCell className="text-center font-bold bg-primary/10">
+                    <TableCell className="text-center font-bold bg-gray-100">
                       {strike.toFixed(2)}
                     </TableCell>
                     
                     {/* Put side */}
-                    <TableCell className="text-center">{putOption.bid ? putOption.bid.toFixed(2) : "-"}</TableCell>
-                    <TableCell className="text-center">{putOption.ask ? putOption.ask.toFixed(2) : "-"}</TableCell>
                     <TableCell className={cn(
                       "text-center",
+                      isPutInTheMoney ? "bg-primary/10" : ""
+                    )}>{putOption.bid ? putOption.bid.toFixed(2) : "-"}</TableCell>
+                    <TableCell className={cn(
+                      "text-center",
+                      isPutInTheMoney ? "bg-primary/10" : ""
+                    )}>{putOption.ask ? putOption.ask.toFixed(2) : "-"}</TableCell>
+                    <TableCell className={cn(
+                      "text-center",
+                      isPutInTheMoney ? "bg-primary/10" : "",
                       putChange > 0 ? "text-green-600" : putChange < 0 ? "text-red-600" : ""
                     )}>
                       {putChange !== 0 ? putChange.toFixed(2) : "-"}
                     </TableCell>
-                    <TableCell className="text-center">
+                    <TableCell className={cn(
+                      "text-center",
+                      isPutInTheMoney ? "bg-primary/10" : ""
+                    )}>
                       {putOption.volatility ? `${putOption.volatility.toFixed(2)}%` : "-"}
                     </TableCell>
                   </TableRow>

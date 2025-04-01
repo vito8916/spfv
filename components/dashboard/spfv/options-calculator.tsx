@@ -114,7 +114,7 @@ export function OptionsCalculator() {
       
       // Process response data
       if (responseData) {
-        setUnderlyingPrice(responseData.underlyingPrice || 0)
+        setUnderlyingPrice(responseData.callOptionChain.lastTradePrice || 0)
         
         // Process call options
         const callOptionsData = responseData.callOptionChain?.strikes?.map(option => ({
