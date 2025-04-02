@@ -141,7 +141,7 @@ export function OptionsCalculator() {
     }
   }
 
-  /* const getSPFV = async () => {
+  const getSPFV = async () => {
     const spfvParams = new URLSearchParams({
       expiration: '04-04-2025',
       symbol: 'TSLA',
@@ -151,7 +151,7 @@ export function OptionsCalculator() {
     const response = await fetch(`/api/spfv/get-spfv?${spfvParams}`);
     const data = await response.json();
     console.log('SPFV', data);
-  } */
+  }
 
   return (
     <div className="grid gap-6">
@@ -237,7 +237,7 @@ export function OptionsCalculator() {
         </CardContent>
       </Card>
 
-     {/*  <Button onClick={getSPFV}>Log Call Options</Button> */}
+      <Button onClick={getSPFV}>Log Call Options</Button>
 
       {showResults && (
         <OptionsResultsTable
