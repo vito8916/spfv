@@ -15,7 +15,6 @@ import { OptionsCalculatorFormValues, optionsCalculatorSchema } from "@/lib/vali
 import { toast } from "sonner"
 import { OptionsResultsTable } from "./options-results-table"
 import SymbolsListSelect from "./symbols-list-select"
-import { getSymbolChainAndSPFV } from "@/app/actions/spfvchain"
 
 interface SPFVData {
   spfv: {
@@ -69,17 +68,34 @@ export function OptionsCalculator() {
   async function onSubmit(data: OptionsCalculatorFormValues) {
     setIsLoading(true)
     try {
-      const formData = new FormData()
-      formData.append("symbol", data.symbol);
-      formData.append("expirationDate", data.expirationDate.toISOString());
+      // Format date as YYYY-MM-DD
+      const formattedDate = format(data.expirationDate, "yyyy-MM-dd");
       
-      console.log(`Submitting request for ${data.symbol}, expiration: ${data.expirationDate.toISOString()}`);
-      const responseData = await getSymbolChainAndSPFV(formData)
+      // Construct the URL with query parameters
+      const url = `/api/spfv/get-chain-with-spfv?symbol=${data.symbol}&date=${formattedDate}`;
+      
+      console.log(`Submitting request to: ${url}`);
+      
+      // Fetch data from our API route
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error: ${response.status} - ${errorText}`);
+      }
+      
+      const responseData = await response.json();
       
       if (responseData) {
-        console.log("Chain data received successfully", responseData);
+        console.log("Chain and SPFV data received successfully", responseData);
         
-        // Extraer las strikes de la respuesta
+        // Extract strikes from the response
         const callStrikes = responseData.callOptionChain?.strikes || [];
         const putStrikes = responseData.putOptionChain?.strikes || [];
         const underlyingPrice = responseData.callOptionChain?.underlyingPrice || 0;
@@ -122,7 +138,7 @@ export function OptionsCalculator() {
         toast.error('No data received from server')
       }
     } catch (error) {
-      // Mostrar información detallada del error
+      // Show detailed error information
       let errorMessage = 'Failed to load option chain';
       
       if (error instanceof Error) {
@@ -141,17 +157,6 @@ export function OptionsCalculator() {
     }
   }
 
-  const getSPFV = async () => {
-    const spfvParams = new URLSearchParams({
-      expiration: '04-04-2025',
-      symbol: 'TSLA',
-      callPutIndicator: 'P',
-      strike: '282.50',
-    });
-    const response = await fetch(`/api/spfv/get-spfv?${spfvParams}`);
-    const data = await response.json();
-    console.log('SPFV', data);
-  }
 
   return (
     <div className="grid gap-6">
@@ -236,8 +241,6 @@ export function OptionsCalculator() {
           </Form>
         </CardContent>
       </Card>
-
-      <Button onClick={getSPFV}>Log Call Options</Button>
 
       {showResults && (
         <OptionsResultsTable
