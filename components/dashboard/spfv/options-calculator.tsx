@@ -11,10 +11,24 @@ import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { optionsCalculatorSchema, type OptionsCalculatorFormValues } from "@/lib/validations/options-calculator"
+import { OptionsCalculatorFormValues, optionsCalculatorSchema } from "@/lib/validations/options-calculator"
 import { toast } from "sonner"
 import { OptionsResultsTable } from "./options-results-table"
 import SymbolsListSelect from "./symbols-list-select"
+import { getSymbolChainAndSPFV } from "@/app/actions/spfvchain"
+
+interface SPFVData {
+  spfv: {
+    milliseconds: number;
+    spfv: number;
+    symbol: string;
+    callPutIndicator: string;
+    tte: number;
+    strikeDiff: number;
+    expiration: string;
+    currentUnderlyingPrice: number;
+  };
+}
 
 interface OptionData {
   strikePrice: number;
@@ -23,37 +37,20 @@ interface OptionData {
   volatility: number;
   prevClose?: number;
   last?: number;
+  spfv?: number;
+  spfvData?: SPFVData;
 }
 
-// Shape of API response
-interface OptionsApiResponse {
-  symbol: string;
-  underlyingPrice: number;
-  isMarketOpen: boolean;
-  callOptionChain: {
-    symbol: string;
-    lastTradePrice: number;
-    strikes: Array<{
-      strikePrice: number;
-      bid: number;
-      ask: number;
-      volatility: number;
-      prevClose: number;
-      last: number;
-    }>;
-  };
-  putOptionChain: {
-    symbol: string;
-    lastTradePrice: number;
-    strikes: Array<{
-      strikePrice: number;
-      bid: number;
-      ask: number;
-      volatility: number;
-      prevClose: number;
-      last: number;
-    }>;
-  };
+interface ChainOptionData {
+  strikePrice: number;
+  bid: number;
+  ask: number;
+  volatility: number;
+  prevClose: number;
+  last: number;
+  spfv?: number;
+  spfvData?: SPFVData;
+  // Add other fields that might come from the API
 }
 
 export function OptionsCalculator() {
@@ -65,60 +62,44 @@ export function OptionsCalculator() {
 
   // Initialize form with React Hook Form and Zod resolver
   const form = useForm<OptionsCalculatorFormValues>({
-    resolver: zodResolver(optionsCalculatorSchema),
-    defaultValues: {
-      symbol: "",
-      optionType: "both",
-      strikeCount: "20"
-    }
+    resolver: zodResolver(optionsCalculatorSchema)
   })
 
   // Submit handler
-  const onSubmit = async (data: OptionsCalculatorFormValues) => {
+  async function onSubmit(data: OptionsCalculatorFormValues) {
     setIsLoading(true)
     try {
-      // Format the date for API
-      const formattedDate = format(data.expirationDate, "yyyy-MM-dd")
+      const formData = new FormData()
+      formData.append("symbol", data.symbol);
+      formData.append("expirationDate", data.expirationDate.toISOString());
       
-      // Construct API parameters
-      const params = new URLSearchParams({
-        symbol: data.symbol,
-        StartDateTime: formattedDate,
-        EndDateTime: formattedDate,
-        callOrPut: "both", 
-        strikeCount: data.strikeCount
-      })
+      const responseData = await getSymbolChainAndSPFV(formData)
       
-      const response = await fetch(`/api/spfv/get-calls-puts?${params}`)
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch options data')
-      }
-      
-      const responseData: OptionsApiResponse = await response.json()
-      
-      // Process response data
       if (responseData) {
-        setUnderlyingPrice(responseData.callOptionChain.lastTradePrice || 0)
+        setUnderlyingPrice(responseData.callOptionChain.underlyingPrice || 0)
         
         // Process call options
-        const callOptionsData = responseData.callOptionChain?.strikes?.map(option => ({
+        const callOptionsData = responseData.callOptionChain?.strikes?.map((option: ChainOptionData) => ({
           strikePrice: option.strikePrice,
           bid: option.bid,
           ask: option.ask, 
           volatility: option.volatility,
           prevClose: option.prevClose,
-          last: option.last
+          last: option.last,
+          spfv: option.spfv,
+          spfvData: option.spfvData
         })) || [];
         
         // Process put options
-        const putOptionsData = responseData.putOptionChain?.strikes?.map(option => ({
+        const putOptionsData = responseData.putOptionChain?.strikes?.map((option: ChainOptionData) => ({
           strikePrice: option.strikePrice,
           bid: option.bid,
           ask: option.ask,
           volatility: option.volatility,
           prevClose: option.prevClose,
-          last: option.last
+          last: option.last,
+          spfv: option.spfv,
+          spfvData: option.spfvData
         })) || [];
         
         setCallOptions(callOptionsData)
@@ -126,8 +107,6 @@ export function OptionsCalculator() {
         setShowResults(true)
         
         toast.success('Option chain loaded successfully')
-      } else {
-        toast.error('Invalid response from server')
       }
     } catch (error) {
       console.error('Error fetching option chain:', error)
@@ -135,6 +114,18 @@ export function OptionsCalculator() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const getSPFV = async () => {
+    const spfvParams = new URLSearchParams({
+      expiration: '04-04-2025',
+      symbol: 'TSLA',
+      callPutIndicator: 'P',
+      strike: '282.50',
+    });
+    const response = await fetch(`/api/spfv/get-spfv?${spfvParams}`);
+    const data = await response.json();
+    console.log('SPFV', data);
   }
 
   return (
@@ -146,7 +137,7 @@ export function OptionsCalculator() {
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)}className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-center">
                 {/* Symbol */}
                 <FormField
@@ -199,24 +190,6 @@ export function OptionsCalculator() {
                     </FormItem>
                   )}
                 />
-
-                {/* Option Type - Hidden since it's always "both" for the option chain view */}
-                <FormField
-                  control={form.control}
-                  name="optionType"
-                  render={({ field }) => (
-                    <input type="hidden" {...field} value="both" />
-                  )}
-                />
-
-                {/* Strike Count - Hidden since it's always 20 */}
-                <FormField
-                  control={form.control}
-                  name="strikeCount"
-                  render={({ field }) => (
-                    <input type="hidden" {...field} value="20" />
-                  )}
-                />
               </div>
               
               <Button
@@ -238,6 +211,8 @@ export function OptionsCalculator() {
           </Form>
         </CardContent>
       </Card>
+
+      <Button onClick={getSPFV}>Log Call Options</Button>
 
       {showResults && (
         <OptionsResultsTable
