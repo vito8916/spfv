@@ -115,6 +115,7 @@ async function fetchSPFVWithRetry(
   return null;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function processSPFVBatch(
   options: Strike[],
   baseUrl: string,
