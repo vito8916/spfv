@@ -210,7 +210,7 @@ export async function getSymbolChainAndSPFV(data: FormData) {
       console.log(`Starting SPFV processing for ${chainData.callOptionChain.strikes.length} call strikes and ${chainData.putOptionChain.strikes.length} put strikes`);
       
       // Para evitar sobrecarga, limitamos el número de strikes a procesar
-      const maxStrikesToProcess = 50; // Ajustar según sea necesario
+      const maxStrikesToProcess = 10; // Ajustar según sea necesario
       
       const callStrikesToProcess = chainData.callOptionChain.strikes.slice(0, maxStrikesToProcess);
       const putStrikesToProcess = chainData.putOptionChain.strikes.slice(0, maxStrikesToProcess);
