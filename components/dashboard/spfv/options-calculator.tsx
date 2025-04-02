@@ -73,13 +73,21 @@ export function OptionsCalculator() {
       formData.append("symbol", data.symbol);
       formData.append("expirationDate", data.expirationDate.toISOString());
       
+      console.log(`Submitting request for ${data.symbol}, expiration: ${data.expirationDate.toISOString()}`);
       const responseData = await getSymbolChainAndSPFV(formData)
       
       if (responseData) {
-        setUnderlyingPrice(responseData.callOptionChain.underlyingPrice || 0)
+        console.log("Chain data received successfully", responseData);
+        
+        // Extraer las strikes de la respuesta
+        const callStrikes = responseData.callOptionChain?.strikes || [];
+        const putStrikes = responseData.putOptionChain?.strikes || [];
+        const underlyingPrice = responseData.callOptionChain?.underlyingPrice || 0;
+        
+        setUnderlyingPrice(underlyingPrice);
         
         // Process call options
-        const callOptionsData = responseData.callOptionChain?.strikes?.map((option: ChainOptionData) => ({
+        const callOptionsData = callStrikes.map((option: ChainOptionData) => ({
           strikePrice: option.strikePrice,
           bid: option.bid,
           ask: option.ask, 
@@ -88,10 +96,10 @@ export function OptionsCalculator() {
           last: option.last,
           spfv: option.spfv,
           spfvData: option.spfvData
-        })) || [];
+        }));
         
         // Process put options
-        const putOptionsData = responseData.putOptionChain?.strikes?.map((option: ChainOptionData) => ({
+        const putOptionsData = putStrikes.map((option: ChainOptionData) => ({
           strikePrice: option.strikePrice,
           bid: option.bid,
           ask: option.ask,
@@ -100,17 +108,34 @@ export function OptionsCalculator() {
           last: option.last,
           spfv: option.spfv,
           spfvData: option.spfvData
-        })) || [];
+        }));
+        
+        console.log(`Processed ${callOptionsData.length} call options and ${putOptionsData.length} put options`);
         
         setCallOptions(callOptionsData)
         setPutOptions(putOptionsData)
         setShowResults(true)
         
         toast.success('Option chain loaded successfully')
+      } else {
+        console.error("Empty response data received");
+        toast.error('No data received from server')
       }
     } catch (error) {
-      console.error('Error fetching option chain:', error)
-      toast.error('Failed to load option chain')
+      // Mostrar información detallada del error
+      let errorMessage = 'Failed to load option chain';
+      
+      if (error instanceof Error) {
+        console.error('Error fetching option chain:', error.message);
+        console.error('Stack:', error.stack);
+        errorMessage = `Error: ${error.message}`;
+      } else {
+        console.error('Unknown error type:', error);
+      }
+      
+      toast.error(errorMessage, {
+        description: 'Please try again or contact support if the problem persists'
+      });
     } finally {
       setIsLoading(false)
     }

@@ -160,7 +160,10 @@ async function processSPFVBatch(
 }
 
 export async function getSymbolChainAndSPFV(data: FormData) {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  // Intentar obtener la URL base de varias variables de entorno posibles
+  const baseUrl =  process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  console.log(`Using base URL: ${baseUrl}`);
+  
   try {
     // Get form data
     const symbol = data.get('symbol')?.toString();
@@ -170,12 +173,18 @@ export async function getSymbolChainAndSPFV(data: FormData) {
       throw new Error('Missing required parameters');
     }
 
+    console.log(`Fetching chain for symbol: ${symbol}, date: ${date}, baseUrl: ${baseUrl}`);
+
     // Format date for chain API (YYYYMMDD)
     const formattedChainDate = formatDateForChain(date);
     
     // Fetch symbol chain - get both calls and puts
+    const chainUrl = `${baseUrl}/api/spfv/get-calls-puts?symbol=${symbol}&StartDateTime=${formattedChainDate}&EndDateTime=${formattedChainDate}&callOrPut=both`;
+    console.log(`Requesting chain from: ${chainUrl}`);
+
+    // Primera etapa: solo obtener el chain sin procesar SPFV
     const chainResponse = await fetch(
-      `${baseUrl}/api/spfv/get-calls-puts?symbol=${symbol}&StartDateTime=${formattedChainDate}&EndDateTime=${formattedChainDate}&callOrPut=both`,
+      chainUrl,
       { 
         method: 'GET',
         cache: 'no-store'
@@ -185,18 +194,29 @@ export async function getSymbolChainAndSPFV(data: FormData) {
     if (!chainResponse.ok) {
       const errorText = await chainResponse.text();
       console.error(`Chain API error: ${chainResponse.status} - ${errorText}`);
-      throw new Error(`Failed to fetch chain: ${chainResponse.statusText}`);
+      throw new Error(`Failed to fetch chain: ${chainResponse.statusText} (${chainResponse.status})`);
     }
 
     const chainData = await chainResponse.json() as ChainResponse;
+    console.log(`Chain data received. Call strikes: ${chainData.callOptionChain.strikes.length}, Put strikes: ${chainData.putOptionChain.strikes.length}`);
+    
+    if (!chainData.callOptionChain?.strikes?.length && !chainData.putOptionChain?.strikes?.length) {
+      console.warn(`No strike data found for ${symbol} on ${date}`);
+    }
 
+    // Para solucionar el problema actual, vamos a devolver los datos del chain sin procesar SPFV
+    // para verificar si al menos esta parte funciona correctamente
+    
+    // Descomentar esta sección para habilitar el procesamiento SPFV después de verificar
+    // que el chain funciona correctamente
+
+    /*
     // Process calls and puts in parallel, but with controlled batch sizes
     const [spfvCallData, spfvPutData] = await Promise.all([
       processSPFVBatch(chainData.callOptionChain.strikes, baseUrl, symbol, 'C'),
       processSPFVBatch(chainData.putOptionChain.strikes, baseUrl, symbol, 'P')
     ]);
     
-
     revalidatePath('/dashboard/spfv/calculator');
 
     return {
@@ -209,9 +229,20 @@ export async function getSymbolChainAndSPFV(data: FormData) {
         strikes: spfvPutData
       }
     };
+    */
+
+    // Por ahora, devolver solo los datos del chain sin SPFV
+    revalidatePath('/dashboard/spfv/calculator');
+    return chainData;
     
   } catch (error) {
     console.error('Error in getSymbolChainAndSPFV:', error);
+    // Proporcionar información más detallada sobre el error
+    if (error instanceof Error) {
+      console.error(`Error details: ${error.message}`);
+      console.error(`Stack trace: ${error.stack}`);
+      throw new Error(`Failed to fetch option chain: ${error.message}`);
+    }
     throw error;
   }
 }

@@ -22,7 +22,15 @@ export async function GET(request: NextRequest) {
 
         // Construct the API URL with parameters
         const apiUrlWithParams = `${API_URL}?symbol=${symbol}&StartDateTime=${startDateTime}&EndDateTime=${endDateTime}&callOrPut=${callOrPut}`;
-        
+        console.log(`Requesting data from external API: ${apiUrlWithParams}`);
+
+        if (!API_URL) {
+            console.error('SPFV_API_URL environment variable is not defined');
+            return NextResponse.json(
+                { error: 'API configuration error - Missing API URL' },
+                { status: 500 }
+            );
+        }
 
         // Fetch data from external API
         const response = await fetch(apiUrlWithParams, {
@@ -36,20 +44,33 @@ export async function GET(request: NextRequest) {
         if (!response.ok) {
             const errorText = await response.text();
             console.error(`API error: ${response.status} - ${errorText}`);
-            throw new Error(`API responded with status: ${response.status}`);
+            return NextResponse.json(
+                { error: `External API error: ${response.status} - ${response.statusText}` },
+                { status: response.status }
+            );
         }
 
         // Parse the response data
         const data = await response.json();
+        console.log(`Data received from external API for ${symbol}, strikes: ${data?.callOptionChain?.strikes?.length || 0} calls, ${data?.putOptionChain?.strikes?.length || 0} puts`);
 
         // Return the original API response structure
         // The component will handle the data formatting
         return NextResponse.json(data);
 
     } catch (error) {
-        console.error('Error fetching options data:', error);
+        let errorMessage = 'Failed to fetch options data';
+        
+        if (error instanceof Error) {
+            errorMessage = error.message;
+            console.error('Error fetching options data:', error.message);
+            console.error('Stack:', error.stack);
+        } else {
+            console.error('Unknown error type:', error);
+        }
+        
         return NextResponse.json(
-            { error: 'Failed to fetch options data' },
+            { error: errorMessage },
             { status: 500 }
         );
     }
