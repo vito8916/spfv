@@ -45,7 +45,7 @@ function formatDateForSPFV(dateStr: string): string {
   return `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}-${date.getFullYear()}`;
 }
 
-async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = 5000) {
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = 8000) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -121,7 +121,7 @@ async function processSPFVBatch(
   symbol: string,
   callPutIndicator: 'C' | 'P'
 ): Promise<Strike[]> {
-  const batchSize = 3; // Process 3 strikes at a time
+  const batchSize = 1; // Process 3 strikes at a time
   const results: Strike[] = [];
 
   for (let i = 0; i < options.length; i += batchSize) {
@@ -152,7 +152,7 @@ async function processSPFVBatch(
 
     // Add delay between batches
     if (i + batchSize < options.length) {
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
 
