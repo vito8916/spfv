@@ -148,14 +148,14 @@ const RegisterForm = () => {
                 {isSubmitting && (
                   <LoaderCircle className="h-4 w-4 animate-spin" />
                 )}
-                Log in
+                Create an account
               </Button>
             </div>
 
             <div className="text-muted-foreground text-center text-sm">
               You have an account?{" "}
               <Link href={"/sign-in"} tabIndex={5}>
-                Sign in
+                Create an account
               </Link>
             </div>
           </form>
