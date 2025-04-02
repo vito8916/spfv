@@ -115,7 +115,6 @@ async function fetchSPFVWithRetry(
   return null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function processSPFVBatch(
   options: Strike[],
   baseUrl: string,
@@ -162,7 +161,7 @@ async function processSPFVBatch(
 
 export async function getSymbolChainAndSPFV(data: FormData) {
   // Intentar obtener la URL base de varias variables de entorno posibles
-  const baseUrl =  process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   console.log(`Using base URL: ${baseUrl}`);
   
   try {
@@ -183,7 +182,6 @@ export async function getSymbolChainAndSPFV(data: FormData) {
     const chainUrl = `${baseUrl}/api/spfv/get-calls-puts?symbol=${symbol}&StartDateTime=${formattedChainDate}&EndDateTime=${formattedChainDate}&callOrPut=both`;
     console.log(`Requesting chain from: ${chainUrl}`);
 
-    // Primera etapa: solo obtener el chain sin procesar SPFV
     const chainResponse = await fetch(
       chainUrl,
       { 
@@ -203,39 +201,45 @@ export async function getSymbolChainAndSPFV(data: FormData) {
     
     if (!chainData.callOptionChain?.strikes?.length && !chainData.putOptionChain?.strikes?.length) {
       console.warn(`No strike data found for ${symbol} on ${date}`);
+      // Si no hay strikes, devolver los datos del chain sin procesar SPFV
+      return chainData;
     }
 
-    // Para solucionar el problema actual, vamos a devolver los datos del chain sin procesar SPFV
-    // para verificar si al menos esta parte funciona correctamente
-    
-    // Descomentar esta sección para habilitar el procesamiento SPFV después de verificar
-    // que el chain funciona correctamente
-
-    /*
     // Process calls and puts in parallel, but with controlled batch sizes
-    const [spfvCallData, spfvPutData] = await Promise.all([
-      processSPFVBatch(chainData.callOptionChain.strikes, baseUrl, symbol, 'C'),
-      processSPFVBatch(chainData.putOptionChain.strikes, baseUrl, symbol, 'P')
-    ]);
-    
-    revalidatePath('/dashboard/spfv/calculator');
-
-    return {
-      callOptionChain: {
-        ...chainData.callOptionChain,
-        strikes: spfvCallData
-      },
-      putOptionChain: {
-        ...chainData.putOptionChain,
-        strikes: spfvPutData
-      }
-    };
-    */
-
-    // Por ahora, devolver solo los datos del chain sin SPFV
-    revalidatePath('/dashboard/spfv/calculator');
-    return chainData;
-    
+    try {
+      console.log(`Starting SPFV processing for ${chainData.callOptionChain.strikes.length} call strikes and ${chainData.putOptionChain.strikes.length} put strikes`);
+      
+      // Para evitar sobrecarga, limitamos el número de strikes a procesar
+      const maxStrikesToProcess = 50; // Ajustar según sea necesario
+      
+      const callStrikesToProcess = chainData.callOptionChain.strikes.slice(0, maxStrikesToProcess);
+      const putStrikesToProcess = chainData.putOptionChain.strikes.slice(0, maxStrikesToProcess);
+      
+      const [spfvCallData, spfvPutData] = await Promise.all([
+        processSPFVBatch(callStrikesToProcess, baseUrl, symbol, 'C'),
+        processSPFVBatch(putStrikesToProcess, baseUrl, symbol, 'P')
+      ]);
+      
+      console.log(`SPFV processing completed. Call data: ${spfvCallData.length}, Put data: ${spfvPutData.length}`);
+      
+      revalidatePath('/dashboard/spfv/calculator');
+      
+      return {
+        callOptionChain: {
+          ...chainData.callOptionChain,
+          strikes: spfvCallData
+        },
+        putOptionChain: {
+          ...chainData.putOptionChain,
+          strikes: spfvPutData
+        }
+      };
+    } catch (spfvError) {
+      console.error('Error processing SPFV data:', spfvError);
+      // Si hay un error en el procesamiento SPFV, devolver los datos del chain sin SPFV
+      console.log('Returning chain data without SPFV due to processing error');
+      return chainData;
+    }
   } catch (error) {
     console.error('Error in getSymbolChainAndSPFV:', error);
     // Proporcionar información más detallada sobre el error
