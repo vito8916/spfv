@@ -11,9 +11,6 @@ export async function GET(request: NextRequest) {
         const startDateTime = searchParams.get('StartDateTime')?.replace(/-/g, '');
         const endDateTime = searchParams.get('EndDateTime')?.replace(/-/g, '');
         const callOrPut = searchParams.get('callOrPut');
-        const desiredStrike = searchParams.get('desiredStrike');
-        const nearTheMoney = searchParams.get('nearTheMoney');
-        const strikeCount = searchParams.get('strikeCount') || '20';
 
         // Validate required parameters
         if (!symbol || !startDateTime || !endDateTime || !callOrPut) {
@@ -24,20 +21,8 @@ export async function GET(request: NextRequest) {
         }
 
         // Construct the API URL with parameters
-        let apiUrlWithParams = `${API_URL}?symbol=${symbol}&StartDateTime=${startDateTime}&EndDateTime=${endDateTime}&callOrPut=${callOrPut}`;
+        const apiUrlWithParams = `${API_URL}?symbol=${symbol}&StartDateTime=${startDateTime}&EndDateTime=${endDateTime}&callOrPut=${callOrPut}`;
         
-        // Add optional parameters if they exist
-        if (desiredStrike) {
-            apiUrlWithParams += `&desiredStrike=${desiredStrike}`;
-        }
-        
-        if (nearTheMoney && nearTheMoney === 'true') {
-            apiUrlWithParams += '&nearTheMoney=true';
-        }
-        
-        if (strikeCount) {
-            apiUrlWithParams += `&strikeCount=${strikeCount}`;
-        }
 
         // Fetch data from external API
         const response = await fetch(apiUrlWithParams, {
