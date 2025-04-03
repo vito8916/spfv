@@ -4,7 +4,7 @@ import { format } from "date-fns"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-
+import { Skeleton } from "@/components/ui/skeleton"
 interface OptionData {
   strikePrice: number;
   bid: number;
@@ -49,6 +49,7 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
       ...putOptions.map(option => option.strikePrice)
     ])
   ).sort((a, b) => a - b); // Sort from lowest to highest
+
 
   return (
     <Card className="mt-6">

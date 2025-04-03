@@ -23,12 +23,7 @@ import SpfvIconTool from "@/components/shared/spfv-icon-tool";
 function SPFVToolSkeleton() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-      <Skeleton className="h-[200px] w-full rounded-xl" />
-      <div className="grid gap-4 md:grid-cols-2">
-        <Skeleton className="h-[300px] rounded-xl" />
-        <Skeleton className="h-[300px] rounded-xl" />
-      </div>
-      <Skeleton className="h-[250px] rounded-xl" />
+      <Skeleton className="h-[250px] w-[400px] rounded-xl" />
     </div>
   );
 }

@@ -215,7 +215,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Para rendimiento, limitar el número de strikes pero procesar más que antes
-    const maxStrikesToProcess = 25; // Procesar más strikes ya que haremos llamadas paralelas
+    const maxStrikesToProcess = 50; // Procesar más strikes ya que haremos llamadas paralelas
     
     // Ordenar los strikes por su proximidad al precio subyacente
     const sortedCallStrikes = [...chainData.callOptionChain.strikes].sort((a, b) => 

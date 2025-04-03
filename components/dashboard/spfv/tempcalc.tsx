@@ -1,44 +1,23 @@
-"use client";
+"use client"
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { format } from "date-fns";
-import { CalendarIcon, LoaderCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useMemo, useState } from "react";
-import TiersList from "./tiers-list";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  OptionsCalculatorFormValues,
-  optionsCalculatorSchema,
-} from "@/lib/validations/options-calculator";
-import { toast } from "sonner";
-import SymbolsListSelect from "./symbols-list-select";
-import { isMarketOpen } from "@/utils/utils";
-import { OptionsResultsTable } from "./options-results-table";
-import { Skeleton } from "@/components/ui/skeleton";
-
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { format } from "date-fns"
+import { CalendarIcon, LoaderCircle } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { useMemo, useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { OptionsCalculatorFormValues, optionsCalculatorSchema } from "@/lib/validations/options-calculator"
+import { toast } from "sonner"
+import { OptionsResultsTable } from "./options-results-table"
+import SymbolsListSelect from "./symbols-list-select"
+import Image from "next/image"
+import { isMarketOpen } from "@/utils/utils"
+import TiersList from "@/components/dashboard/spfv/tiers-list"
 interface SPFVData {
   spfv: {
     milliseconds: number;
@@ -51,6 +30,7 @@ interface SPFVData {
     currentUnderlyingPrice: number;
   };
 }
+
 interface OptionData {
   strikePrice: number;
   bid: number;
@@ -61,6 +41,7 @@ interface OptionData {
   spfv?: number;
   spfvData?: SPFVData;
 }
+
 interface ChainOptionData {
   strikePrice: number;
   bid: number;
@@ -74,20 +55,27 @@ interface ChainOptionData {
 }
 
 export function OptionsCalculator() {
-  const marketIsOpen = useMemo(() => isMarketOpen(), []);
-
-  const [symbol, setSymbol] = useState<string>();
-  const [expirationDate, setExpirationDate] = useState<Date>();
-  const [showTiers, setShowTiers] = useState(false);
-  const [showResults, setShowResults] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
   const [callOptions, setCallOptions] = useState<OptionData[]>([]);
   const [putOptions, setPutOptions] = useState<OptionData[]>([]);
   const [underlyingPrice, setUnderlyingPrice] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+
+
+  const marketIsOpen = useMemo(() => isMarketOpen(), []);
+
+
   // Initialize form with React Hook Form and Zod resolver
   const form = useForm<OptionsCalculatorFormValues>({
-    resolver: zodResolver(optionsCalculatorSchema),
-  });
+    resolver: zodResolver(optionsCalculatorSchema)
+  })
+
+  const symbol = form.watch("symbol");
+  const expirationDate = form.watch("expirationDate");
+  console.log("symbol", symbol)
+  console.log("expirationDate", expirationDate)
+
+
 
   // Submit handler
   async function onSubmit(data: OptionsCalculatorFormValues) {
@@ -96,12 +84,7 @@ export function OptionsCalculator() {
       return;
     }
 
-    setSymbol(data.symbol);
-    setExpirationDate(data.expirationDate);
-    setShowTiers(true);
-    setShowResults(false);
-    setIsLoading(true);
-    // Fetch the chain and SPFV data
+    setIsLoading(true)
     try {
       // Format date as YYYY-MM-DD
       const formattedDate = format(data.expirationDate, "yyyy-MM-dd");
@@ -192,18 +175,17 @@ export function OptionsCalculator() {
     }
   }
 
+
   return (
     <div className="grid gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>Options Strategy Tiers</CardTitle>
-          <CardDescription>
-            View optimal strategy tiers for any stock symbol and expiration date
-          </CardDescription>
+          <CardTitle>Options Chain Viewer</CardTitle>
+          <CardDescription>View option chains for any stock symbol and expiration date</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)}className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-center">
                 {/* Symbol */}
                 <FormField
@@ -230,17 +212,12 @@ export function OptionsCalculator() {
                           <FormControl>
                             <Button
                               variant={"outline"}
-                              className={cn(
-                                "w-full justify-start text-left font-normal",
+                              className={cn("w-full justify-start text-left font-normal", 
                                 !field.value && "text-muted-foreground"
                               )}
                             >
                               <CalendarIcon className="mr-2 h-4 w-4" />
-                              {field.value ? (
-                                format(field.value, "PP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
+                              {field.value ? format(field.value, "PP") : <span>Pick a date</span>}
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
@@ -262,7 +239,7 @@ export function OptionsCalculator() {
                   )}
                 />
               </div>
-
+              
               <Button
                 type="submit"
                 className="w-full"
@@ -287,31 +264,28 @@ export function OptionsCalculator() {
         </CardContent>
       </Card>
 
+      {isLoading && (
+        <div className="flex justify-center items-center">
+          <Image src="/logo-animado-blanco.gif" alt="Loading" width={100} height={100} /> 
+        </div>
+      )}
+
       {/* if the market is not open, show a message */}
-      {!marketIsOpen && (
-        <div className="flex justify-center items-center text-center">
+      {
+         !marketIsOpen && (
+          <div className="flex justify-center items-center text-center">
           <p className="text-muted-foreground text-sm">
-            The market is currently closed. It opens at 9:30 AM ET, Monday to
-            Friday.
+            The market is currently closed. It opens at 9:30 AM ET, Monday to Friday.
           </p>
         </div>
-      )}
-
-      {/* Use the TierSection component */}
-      {showTiers && <TiersList symbol={symbol} expiration={expirationDate} />}
-
-      {isLoading && (
-        <div className="space-y-6">
-            <h3 className="text-lg font-medium">Loading Option Chain...</h3>
-            <div className="grid grid-cols-1 gap-4">
-              <div className="border rounded-lg p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              </div>
-            </div>
-        </div>
-      )}
+        )
+      }
+      
+      {
+        showResults && (
+          <TiersList symbol={symbol} expiration={expirationDate} />
+        )
+      }
 
       {showResults && (
         <OptionsResultsTable
@@ -323,5 +297,6 @@ export function OptionsCalculator() {
         />
       )}
     </div>
-  );
+  )
 }
+

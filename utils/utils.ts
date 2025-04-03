@@ -35,6 +35,36 @@ export function isFriday(date: Date): boolean {
   return dayOfWeek === 5; // 5 is Friday
 }
 
+//is market open - a function to know if the market is open in the US 
+export function isMarketOpen(): boolean {
+  
+  const date = new Date();
+  const nyTime = new Date(
+    date.toLocaleString("en-US", { timeZone: "America/New_York" })
+  );
+
+  const day = nyTime.getDay(); // 0 = Sunday, 6 = Saturday
+  const hours = nyTime.getHours();
+  const minutes = nyTime.getMinutes();
+
+  // Verifica si es sábado o domingo
+  if (day === 0 || day === 6) return false;
+
+  if (day === 4) {
+    return true;
+  }
+
+  // Verifica si está dentro del horario de mercado (9:30am - 4:00pm ET)
+  if (
+    (hours > 9 || (hours === 9 && minutes >= 30)) &&
+    (hours < 16)
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 //get the fridays that are bank holidays in the US from 2024 to 2028
 /* export function getFridaysThatAreBankHolidays(year: number): Date[] {
   const fridays = [];

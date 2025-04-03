@@ -6,6 +6,30 @@ import { CalendarIcon } from "lucide-react";
 import { formatDate } from "@/utils/utils";
 import { OptionsCalculator } from "@/components/dashboard/spfv/options-calculator";
 
+//skeleton
+import { Skeleton } from "@/components/ui/skeleton";
+import { Suspense } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+
+export function FairValueCalculatorPageSkeleton() {
+  return (
+    <div className="container mx-auto py-10 px-4">
+      <Card className="space-y-6">
+            <CardContent>
+              <div className="space-y-4">
+                <Skeleton className="h-8 w-[250px]" />
+                <Skeleton className="h-4 w-[200px]" />
+              </div>
+              <div className="space-y-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            </CardContent>
+          </Card>
+    </div>
+  )
+}
+
 export default async function FairValueCalculatorPage() {
   // Get user data and check subscription
   const user = await getAuthUser();
@@ -30,7 +54,7 @@ export default async function FairValueCalculatorPage() {
     <div className="container mx-auto py-10 px-4">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Fair Value Calculator</h1>
+          <h1 className="text-3xl font-bold">Sp Fair Value</h1>
           <p className="text-muted-foreground">
             Calculate option fair values based on market data
           </p>
@@ -42,7 +66,9 @@ export default async function FairValueCalculatorPage() {
           </Badge>
         )}
       </div>
-      <OptionsCalculator />
+      <Suspense fallback={<FairValueCalculatorPageSkeleton />}>
+        <OptionsCalculator />
+      </Suspense>
     </div>
   );
 } 

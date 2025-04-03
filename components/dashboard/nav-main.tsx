@@ -42,10 +42,10 @@ export function NavMain() {
     return (
         <SidebarGroup className="px-2 py-0">
             <SidebarGroupLabel>Fair Value Platform</SidebarGroupLabel>
-            <SidebarMenu>
+            <SidebarMenu className="gap-4">
                 {mainNavItems.map((item) => (
                     <SidebarMenuItem key={item.title} >
-                        <SidebarMenuButton asChild isActive={item.url === pathname}>
+                        <SidebarMenuButton asChild isActive={item.url === pathname} className="py-5 px-4 data-[active=true]:bg-primary/10 data-[active=true]:text-primary">
                             <Link href={item.url} prefetch>
                                 {item.icon && <item.icon />}
                                 <span>{item.title}</span>
