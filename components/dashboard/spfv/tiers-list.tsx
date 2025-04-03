@@ -43,6 +43,7 @@ export default function TiersList({ symbol, expiration }: TiersListProps) {
         return;
       }
 
+      // Format as YYYYMMDD, which is the correct format for the updown API
       const formattedDate = format(expiration, "yyyyMMdd");
       
       try {

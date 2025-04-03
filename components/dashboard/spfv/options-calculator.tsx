@@ -101,17 +101,16 @@ export function OptionsCalculator() {
     setShowTiers(true);
     setShowResults(false);
     setIsLoading(true);
-    // Fetch the chain and SPFV data
+    
     try {
       // Format date as YYYY-MM-DD
-      const formattedDate = format(data.expirationDate, "yyyy-MM-dd");
+      //const formattedDate = format(data.expirationDate, "yyyy-MM-dd");
       
-      // Construct the URL with query parameters
-      const url = `/api/spfv/get-chain-with-spfv?symbol=${data.symbol}&date=${formattedDate}`;
+      // Use the filtered chain API endpoint that returns strikes with SPFV data
+      const url = `/api/spfv/get-filtered-chain?symbol=${data.symbol}&date=${data.expirationDate}`;
       
       console.log(`Submitting request to: ${url}`);
       
-      // Fetch data from our API route
       const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -128,12 +127,12 @@ export function OptionsCalculator() {
       const responseData = await response.json();
       
       if (responseData) {
-        console.log("Chain and SPFV data received successfully", responseData);
+        console.log("Chain data with SPFV values received successfully", responseData);
         
         // Extract strikes from the response
         const callStrikes = responseData.callOptionChain?.strikes || [];
         const putStrikes = responseData.putOptionChain?.strikes || [];
-        const underlyingPrice = responseData.callOptionChain?.underlyingPrice || 0;
+        const underlyingPrice = responseData.underlyingPrice || 0;
         
         setUnderlyingPrice(underlyingPrice);
         
@@ -145,7 +144,7 @@ export function OptionsCalculator() {
           volatility: option.volatility,
           prevClose: option.prevClose,
           last: option.last,
-          spfv: option.spfv,
+          spfv: option.spfvData?.spfv?.spfv,
           spfvData: option.spfvData
         }));
         
@@ -157,20 +156,20 @@ export function OptionsCalculator() {
           volatility: option.volatility,
           prevClose: option.prevClose,
           last: option.last,
-          spfv: option.spfv,
+          spfv: option.spfvData?.spfv?.spfv,
           spfvData: option.spfvData
         }));
         
-        console.log(`Processed ${callOptionsData.length} call options and ${putOptionsData.length} put options`);
+        console.log(`Processed ${callOptionsData.length} call options and ${putOptionsData.length} put options with SPFV values`);
         
-        setCallOptions(callOptionsData)
-        setPutOptions(putOptionsData)
-        setShowResults(true)
+        setCallOptions(callOptionsData);
+        setPutOptions(putOptionsData);
+        setShowResults(true);
         
-        toast.success('Option chain loaded successfully')
+        toast.success(`Option chain loaded with ${callOptionsData.length} calls and ${putOptionsData.length} puts containing SPFV values`);
       } else {
         console.error("Empty response data received");
-        toast.error('No data received from server')
+        toast.error('No data received from server');
       }
     } catch (error) {
       // Show detailed error information
@@ -188,7 +187,7 @@ export function OptionsCalculator() {
         description: 'Please try again or contact support if the problem persists'
       });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -314,14 +313,19 @@ export function OptionsCalculator() {
       )}
 
       {showResults && (
-        <OptionsResultsTable
-          callOptions={callOptions}
-          putOptions={putOptions}
-          symbol={form.getValues("symbol")}
-          expiryDate={form.getValues("expirationDate")}
-          underlyingPrice={underlyingPrice}
-        />
+        <>
+          <h2 className="text-xl font-bold">Options with SPFV Values</h2>
+          
+          <OptionsResultsTable
+            callOptions={callOptions}
+            putOptions={putOptions}
+            symbol={form.getValues("symbol")}
+            expiryDate={form.getValues("expirationDate")}
+            underlyingPrice={underlyingPrice}
+          />
+        </>
       )}
     </div>
   );
 }
+

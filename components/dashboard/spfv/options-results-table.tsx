@@ -4,6 +4,20 @@ import { format } from "date-fns"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+
+interface SPFVData {
+  spfv: {
+    milliseconds: number;
+    spfv: number;
+    symbol: string;
+    callPutIndicator: string;
+    tte: number;
+    strikeDiff: number;
+    expiration: string;
+    currentUnderlyingPrice: number;
+  };
+}
+
 interface OptionData {
   strikePrice: number;
   bid: number;
@@ -12,18 +26,7 @@ interface OptionData {
   prevClose?: number; // Used to calculate change
   last?: number; // Current price, used to calculate change
   spfv?: number;
-  spfvData?: {
-    spfv: {
-      milliseconds: number;
-      spfv: number;
-      symbol: string;
-      callPutIndicator: string;
-      tte: number;
-      strikeDiff: number;
-      expiration: string;
-      currentUnderlyingPrice: number;
-    };
-  };
+  spfvData?: SPFVData;
 }
 
 interface OptionsResultsTableProps {
@@ -41,14 +44,24 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
     return current - previous;
   };
 
-  // Sort options by strike price
-  const sortedStrikes = Array.from(
-    new Set([
-      ...callOptions.map(option => option.strikePrice),
-      ...putOptions.map(option => option.strikePrice)
-    ])
-  ).sort((a, b) => a - b); // Sort from lowest to highest
+  // Create a collection of all available strike prices
+  const allStrikePrices = new Set<number>([
+    ...callOptions.map(option => option.strikePrice),
+    ...putOptions.map(option => option.strikePrice)
+  ]);
 
+  // Sort strikes by strike price
+  const sortedStrikes = Array.from(allStrikePrices).sort((a, b) => a - b);
+
+  // Count how many options have SPFV data
+  const callsWithSPFV = callOptions.filter(option => option.spfvData?.spfv?.spfv).length;
+  const putsWithSPFV = putOptions.filter(option => option.spfvData?.spfv?.spfv).length;
+  
+  // Calculate how many unique strikes have at least one side (call or put) with SPFV data
+  const strikesWithSPFVData = new Set([
+    ...callOptions.filter(option => option.spfvData?.spfv?.spfv).map(option => option.strikePrice),
+    ...putOptions.filter(option => option.spfvData?.spfv?.spfv).map(option => option.strikePrice)
+  ]);
 
   return (
     <Card className="mt-6">
@@ -63,9 +76,17 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
               {underlyingPrice ? ` • Stock Price: $${underlyingPrice.toFixed(2)}` : ""}
             </CardDescription>
           </div>
-          <Badge variant="outline" className="self-start md:self-auto">
-            {sortedStrikes.length} strikes available
-          </Badge>
+          <div className="flex flex-col md:flex-row gap-2">
+            <Badge variant="outline" className="self-start md:self-auto">
+              {sortedStrikes.length} strikes available
+            </Badge>
+            <Badge variant="outline" className="self-start md:self-auto">
+              {strikesWithSPFVData.size} strikes with SPFV values
+            </Badge>
+            <Badge variant="default" className="self-start md:self-auto text-xs">
+              {callsWithSPFV} calls • {putsWithSPFV} puts
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="p-0">
@@ -91,10 +112,10 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                   <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">BID</th>
                   <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">ASK</th>
                   <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">LAST</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">SPFV</th>
+                  <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px] ">SPFV</th>
                   {/* Strike is in the middle */}
                   {/* Put columns - match same order as in the data rows */}
-                  <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">SPFV</th>
+                  <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px] ">SPFV</th>
                   <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">LAST</th>
                   <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">BID</th>
                   <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">ASK</th>
@@ -130,12 +151,21 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                   const isCallInTheMoney = strike < underlyingPrice;
                   const isPutInTheMoney = strike > underlyingPrice;
                   
+                  // Get SPFV values directly from the spfvData object
+                  const callSPFV = callOption.spfvData?.spfv?.spfv;
+                  const putSPFV = putOption.spfvData?.spfv?.spfv;
+                  
+                  // Flag for highlighting rows with SPFV values
+                  const hasAnySPFV = Boolean(callSPFV || putSPFV);
+                  const isCurrentPrice = Math.abs(strike - underlyingPrice) < 0.01;
+                  
                   return (
                     <tr 
                       key={strike} 
                       className={cn(
                         "border-b transition-colors",
-                        index % 2 === 0 ? "bg-muted/20" : ""
+                        index % 2 === 0 ? "bg-muted/20" : "",
+                        hasAnySPFV ? "bg-blue-50/20" : ""
                       )}
                     >
                       {/* Call side */}
@@ -173,30 +203,35 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                       <td className={cn(
                         "p-4 align-middle text-center font-medium",
                         isCallInTheMoney ? "bg-primary/10" : "",
-                        callOption.spfvData?.spfv?.spfv ? "text-blue-600" : ""
+                        callSPFV ? "text-blue-600 bg-blue-50/50" : ""
                       )}>
-                        {callOption.spfvData?.spfv?.spfv ? 
-                          (typeof callOption.spfvData.spfv.spfv === 'number' ? 
-                            callOption.spfvData.spfv.spfv.toFixed(2) : 
-                            String(callOption.spfvData.spfv.spfv)
+                        {callSPFV ? 
+                          (typeof callSPFV === 'number' ? 
+                            callSPFV.toFixed(3) : 
+                            String(callSPFV)
                           ) : "-"}
                       </td>
                       
                       {/* Strike price (middle column) */}
-                      <td className="p-4 align-middle text-center font-bold bg-gray-100">
+                      <td className={cn(
+                        "p-4 align-middle text-center font-bold",
+                        "bg-gray-100", 
+                        isCurrentPrice ? "bg-yellow-100  outline-1 outline-yellow-400" : ""
+                      )}>
                         {strike.toFixed(2)}
+                        {isCurrentPrice && <span className="block text-xs font-normal text-gray-600">Current</span>}
                       </td>
                       
                       {/* Put side */}
                       <td className={cn(
                         "p-4 align-middle text-center font-medium",
                         isPutInTheMoney ? "bg-primary/10" : "",
-                        putOption.spfvData?.spfv?.spfv ? "text-blue-600" : ""
+                        putSPFV ? "text-blue-600 bg-blue-50/50" : ""
                       )}>
-                        {putOption.spfvData?.spfv?.spfv ? 
-                          (typeof putOption.spfvData.spfv.spfv === 'number' ? 
-                            putOption.spfvData.spfv.spfv.toFixed(2) : 
-                            String(putOption.spfvData.spfv.spfv)
+                        {putSPFV ? 
+                          (typeof putSPFV === 'number' ? 
+                            putSPFV.toFixed(3) : 
+                            String(putSPFV)
                           ) : "-"}
                       </td>
                       <td className={cn(
