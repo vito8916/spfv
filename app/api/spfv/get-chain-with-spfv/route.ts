@@ -40,10 +40,136 @@ interface ChainResponse {
   putOptionChain: OptionChain;
 }
 
-// Helper functions
+// Helper function to format date for SPFV API
 function formatDateForSPFV(dateStr: string): string {
   const date = new Date(dateStr);
   return `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}-${date.getFullYear()}`;
+}
+
+// Helper function to fetch SPFV data with retry logic
+async function fetchSPFVData(
+  symbol: string,
+  strike: number,
+  expirationDate: string,
+  callPutIndicator: 'C' | 'P',
+  maxRetries = 2,
+  timeoutMs = 10000
+): Promise<SPFVResponse | null> {
+  const formattedDate = formatDateForSPFV(expirationDate);
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      // Abort controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      
+      // Construct the API URL with parameters
+      const apiUrl = `${SPFV_API_URL}?symbol=${symbol}&expiration=${formattedDate}&strike=${strike.toFixed(2)}&callPutIndicator=${callPutIndicator}`;
+      console.log(`Fetching SPFV data from: ${apiUrl} (Attempt ${attempt + 1}/${maxRetries})`);
+      
+      // Fetch data from external API
+      const response = await fetch(apiUrl, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+      });
+      
+      // Clear the timeout
+      clearTimeout(timeoutId);
+      
+      if (response.status === 400) {
+        console.log(`Attempt ${attempt + 1}: No SPFV data found for ${callPutIndicator} strike ${strike}`);
+        if (attempt < maxRetries - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+          continue;
+        }
+        return null;
+      }
+      
+      if (!response.ok) {
+        console.error(`Attempt ${attempt + 1}: SPFV API error: ${response.status} - ${response.statusText}`);
+        if (attempt < maxRetries - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+          continue;
+        }
+        return null;
+      }
+      
+      // Parse the response data
+      const data = await response.json();
+      console.log(`Successfully fetched SPFV data for ${callPutIndicator} strike ${strike}: ${data.spfv?.spfv || 'N/A'}`);
+      return data as SPFVResponse;
+      
+    } catch (error) {
+      // Check if this is an abort error (timeout)
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.error(`Attempt ${attempt + 1}: Timeout fetching SPFV for ${callPutIndicator} strike ${strike}`);
+      } else if (error instanceof Error) {
+        console.error(`Attempt ${attempt + 1}: Error fetching SPFV for ${callPutIndicator} strike ${strike}: ${error.message}`);
+      } else {
+        console.error(`Attempt ${attempt + 1}: Unknown error fetching SPFV for ${callPutIndicator} strike ${strike}`);
+      }
+      
+      if (attempt < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+        continue;
+      }
+      return null;
+    }
+  }
+  
+  return null;
+}
+
+// Helper function to process a batch of strikes
+async function processSPFVBatch(
+  strikes: Strike[],
+  symbol: string,
+  callPutIndicator: 'C' | 'P',
+  batchSize = 3
+): Promise<Strike[]> {
+  const results: Strike[] = [];
+  
+  // Process strikes in batches to avoid overwhelming the API
+  for (let i = 0; i < strikes.length; i += batchSize) {
+    // Get a slice of strikes to process in this batch
+    const batch = strikes.slice(i, i + batchSize);
+    console.log(`Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(strikes.length / batchSize)} of ${callPutIndicator} strikes`);
+    
+    // Process each strike in the batch in parallel
+    const batchPromises = batch.map(async (strike) => {
+      const spfvData = await fetchSPFVData(
+        symbol,
+        strike.strikePrice,
+        strike.expirationDate,
+        callPutIndicator
+      );
+      
+      if (spfvData && spfvData.spfv) {
+        return {
+          ...strike,
+          spfv: spfvData.spfv.spfv,
+          spfvData: spfvData
+        };
+      }
+      
+      // If SPFV data fetch failed, return the strike without SPFV data
+      return strike;
+    });
+    
+    // Wait for all strikes in this batch to be processed
+    const batchResults = await Promise.all(batchPromises);
+    results.push(...batchResults);
+    
+    // Add a delay between batches to avoid rate limiting
+    if (i + batchSize < strikes.length) {
+      console.log(`Waiting before processing next batch...`);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+  
+  return results;
 }
 
 export async function GET(request: NextRequest) {
@@ -53,11 +179,7 @@ export async function GET(request: NextRequest) {
     const symbol = searchParams.get('symbol');
     const date = searchParams.get('date');
     
-    // Check if we're running on Netlify/Vercel
-    const host = request.headers.get('host') || '';
-    const isProduction = host.includes('netlify') || host.includes('vercel');
-    
-    console.log(`Processing request for symbol: ${symbol}, date: ${date}, isProduction: ${isProduction}`);
+    console.log(`Processing request for symbol: ${symbol}, date: ${date}`);
 
     // Validate required parameters
     if (!symbol || !date) {
@@ -100,153 +222,60 @@ export async function GET(request: NextRequest) {
       console.log(`No strike data found for ${symbol} on ${date}`);
       return NextResponse.json(chainData);
     }
-
-    // If running in production (Netlify/Vercel), use simulated SPFV values
-    if (isProduction) {
-      console.log("Running in production environment - using simulated SPFV values");
+    
+    // For performance reasons, limit the number of strikes to process
+    const maxStrikesToProcess = 15; // You can adjust this as needed
+    
+    // Sort strikes by their proximity to the underlying price and take the closest ones
+    const sortedCallStrikes = [...chainData.callOptionChain.strikes].sort((a, b) => 
+      Math.abs(a.strikePrice - chainData.callOptionChain.underlyingPrice) - 
+      Math.abs(b.strikePrice - chainData.callOptionChain.underlyingPrice)
+    ).slice(0, maxStrikesToProcess);
+    
+    const sortedPutStrikes = [...chainData.putOptionChain.strikes].sort((a, b) => 
+      Math.abs(a.strikePrice - chainData.putOptionChain.underlyingPrice) - 
+      Math.abs(b.strikePrice - chainData.putOptionChain.underlyingPrice)
+    ).slice(0, maxStrikesToProcess);
+    
+    console.log(`Processing SPFV data for ${sortedCallStrikes.length} call strikes and ${sortedPutStrikes.length} put strikes`);
+    
+    // Process calls and puts in sequence to avoid overwhelming the API
+    try {
+      // Process call strikes first
+      const spfvCallData = await processSPFVBatch(sortedCallStrikes, symbol, 'C');
+      console.log(`Completed processing ${spfvCallData.length} call strikes`);
       
-      // Create simulated SPFV values for calls
-      const spfvCallData = chainData.callOptionChain.strikes.map(strike => {
-        // Calculate a simulated SPFV value based on the difference between strike and underlying price
-        const underlyingPrice = chainData.callOptionChain.underlyingPrice;
-        const diff = Math.max(0, underlyingPrice - strike.strikePrice); // For calls, intrinsic value is max(0, underlyingPrice - strikePrice)
-        const timeValue = strike.ask - diff; // Time value is premium minus intrinsic value
-        
-        // Create a simulated SPFV object
-        const simulatedSpfv = {
-          spfv: {
-            milliseconds: Date.now(),
-            spfv: +(timeValue * 0.8).toFixed(2), // Simulate SPFV as a percentage of time value
-            symbol: symbol,
-            callPutIndicator: "C",
-            tte: 30, // Days to expiration (simulated)
-            strikeDiff: Math.abs(strike.strikePrice - underlyingPrice),
-            expiration: date.split('T')[0] || date,
-            currentUnderlyingPrice: underlyingPrice
-          }
-        };
-        
-        return {
-          ...strike,
-          spfv: simulatedSpfv.spfv.spfv,
-          spfvData: simulatedSpfv
-        };
-      });
-      
-      // Create simulated SPFV values for puts
-      const spfvPutData = chainData.putOptionChain.strikes.map(strike => {
-        // Calculate a simulated SPFV value based on the difference between strike and underlying price
-        const underlyingPrice = chainData.putOptionChain.underlyingPrice;
-        const diff = Math.max(0, strike.strikePrice - underlyingPrice); // For puts, intrinsic value is max(0, strikePrice - underlyingPrice)
-        const timeValue = strike.ask - diff; // Time value is premium minus intrinsic value
-        
-        // Create a simulated SPFV object
-        const simulatedSpfv = {
-          spfv: {
-            milliseconds: Date.now(),
-            spfv: +(timeValue * 0.8).toFixed(2), // Simulate SPFV as a percentage of time value
-            symbol: symbol,
-            callPutIndicator: "P",
-            tte: 30, // Days to expiration (simulated)
-            strikeDiff: Math.abs(strike.strikePrice - underlyingPrice),
-            expiration: date.split('T')[0] || date,
-            currentUnderlyingPrice: underlyingPrice
-          }
-        };
-        
-        return {
-          ...strike,
-          spfv: simulatedSpfv.spfv.spfv,
-          spfvData: simulatedSpfv
-        };
-      });
-      
-      console.log(`Generated simulated SPFV data for ${spfvCallData.length} calls and ${spfvPutData.length} puts`);
+      // Then process put strikes
+      const spfvPutData = await processSPFVBatch(sortedPutStrikes, symbol, 'P');
+      console.log(`Completed processing ${spfvPutData.length} put strikes`);
       
       // Return the combined data
       const result = {
         callOptionChain: {
           ...chainData.callOptionChain,
-          strikes: spfvCallData
+          strikes: chainData.callOptionChain.strikes.map(strike => {
+            // Find if we have SPFV data for this strike
+            const processedStrike = spfvCallData.find(s => s.strikePrice === strike.strikePrice);
+            return processedStrike || strike;
+          })
         },
         putOptionChain: {
           ...chainData.putOptionChain,
-          strikes: spfvPutData
+          strikes: chainData.putOptionChain.strikes.map(strike => {
+            // Find if we have SPFV data for this strike
+            const processedStrike = spfvPutData.find(s => s.strikePrice === strike.strikePrice);
+            return processedStrike || strike;
+          })
         }
       };
       
       return NextResponse.json(result);
+    } catch (spfvError) {
+      console.error('Error processing SPFV data:', spfvError);
+      
+      // If there's an error processing SPFV, still return the chain data
+      return NextResponse.json(chainData);
     }
-    
-    // For local development, attempt to fetch real SPFV data
-    // For this example, we'll just use the simulated values
-    // In a real implementation, you would implement the SPFV fetching logic here
-    console.log(`Using simulated SPFV values for local development`);
-    
-    // Simulate the same behavior as in production
-    const spfvCallData = chainData.callOptionChain.strikes.map(strike => {
-      const underlyingPrice = chainData.callOptionChain.underlyingPrice;
-      const diff = Math.max(0, underlyingPrice - strike.strikePrice);
-      const timeValue = strike.ask - diff;
-      
-      const simulatedSpfv = {
-        spfv: {
-          milliseconds: Date.now(),
-          spfv: +(timeValue * 0.8).toFixed(2),
-          symbol: symbol,
-          callPutIndicator: "C",
-          tte: 30,
-          strikeDiff: Math.abs(strike.strikePrice - underlyingPrice),
-          expiration: date.split('T')[0] || date,
-          currentUnderlyingPrice: underlyingPrice
-        }
-      };
-      
-      return {
-        ...strike,
-        spfv: simulatedSpfv.spfv.spfv,
-        spfvData: simulatedSpfv
-      };
-    });
-    
-    const spfvPutData = chainData.putOptionChain.strikes.map(strike => {
-      const underlyingPrice = chainData.putOptionChain.underlyingPrice;
-      const diff = Math.max(0, strike.strikePrice - underlyingPrice);
-      const timeValue = strike.ask - diff;
-      
-      const simulatedSpfv = {
-        spfv: {
-          milliseconds: Date.now(),
-          spfv: +(timeValue * 0.8).toFixed(2),
-          symbol: symbol,
-          callPutIndicator: "P",
-          tte: 30,
-          strikeDiff: Math.abs(strike.strikePrice - underlyingPrice),
-          expiration: date.split('T')[0] || date,
-          currentUnderlyingPrice: underlyingPrice
-        }
-      };
-      
-      return {
-        ...strike,
-        spfv: simulatedSpfv.spfv.spfv,
-        spfvData: simulatedSpfv
-      };
-    });
-    
-    // Return the combined data
-    const result = {
-      callOptionChain: {
-        ...chainData.callOptionChain,
-        strikes: spfvCallData
-      },
-      putOptionChain: {
-        ...chainData.putOptionChain,
-        strikes: spfvPutData
-      }
-    };
-    
-    return NextResponse.json(result);
     
   } catch (error) {
     let errorMessage = 'Failed to fetch options data';
