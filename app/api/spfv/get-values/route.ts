@@ -1,5 +1,5 @@
-/* import { createClient } from "@/utils/supabase/server";
-import { format } from "date-fns";
+import { createClient } from "@/utils/supabase/server";
+
 import { NextResponse } from "next/server";
 
 const TIERS_API_URL = `${process.env.SPFV_API_URL}/symbol-multi-value-live`;
@@ -11,7 +11,8 @@ export async function GET(req: Request) {
     const expirationDate = searchParams.get("expirationDate");
 
     // format the expiration date to MM-DD-YYYY
-    const formattedExpirationDate = format(expirationDate, "MM-dd-yyyy");
+    //
+   // const formattedExpirationDate = format(expirationDate, "MM-dd-yyyy");
 
     if (!symbol || !expirationDate) {
       return NextResponse.json(
@@ -31,7 +32,7 @@ export async function GET(req: Request) {
     }
 
     const response = await fetch(
-      `${TIERS_API_URL}?expiration=${formattedExpirationDate}&symbol=${symbol}`
+      `${TIERS_API_URL}?expiration=${expirationDate}&symbol=${symbol}`
     );
 
     if (!response.ok) {
@@ -52,4 +53,3 @@ export async function GET(req: Request) {
     );
   }
 }
- */
