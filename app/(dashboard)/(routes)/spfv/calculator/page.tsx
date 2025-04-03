@@ -7,28 +7,9 @@ import { formatDate } from "@/utils/utils";
 import { OptionsCalculator } from "@/components/dashboard/spfv/options-calculator";
 
 //skeleton
-import { Skeleton } from "@/components/ui/skeleton";
 import { Suspense } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import CalculatorSkeleton from "@/components/skeletons/calculator-skeleton";
 
-export function FairValueCalculatorPageSkeleton() {
-  return (
-    <div className="container mx-auto py-10 px-4">
-      <Card className="space-y-6">
-            <CardContent>
-              <div className="space-y-4">
-                <Skeleton className="h-8 w-[250px]" />
-                <Skeleton className="h-4 w-[200px]" />
-              </div>
-              <div className="space-y-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            </CardContent>
-          </Card>
-    </div>
-  )
-}
 
 export default async function FairValueCalculatorPage() {
   // Get user data and check subscription
@@ -66,7 +47,7 @@ export default async function FairValueCalculatorPage() {
           </Badge>
         )}
       </div>
-      <Suspense fallback={<FairValueCalculatorPageSkeleton />}>
+      <Suspense fallback={<CalculatorSkeleton />}>
         <OptionsCalculator />
       </Suspense>
     </div>

@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+/* import { createClient } from "@/utils/supabase/server";
 import { format } from "date-fns";
 import { NextResponse } from "next/server";
 
@@ -52,3 +52,4 @@ export async function GET(req: Request) {
     );
   }
 }
+ */
