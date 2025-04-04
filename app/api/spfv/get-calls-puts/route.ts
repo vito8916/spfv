@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
                 'Content-Type': 'application/json',
                 // Add any required API keys or authentication headers
             },
+            cache: 'no-store'
         });
 
         // Check if the external API request was successful

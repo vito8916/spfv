@@ -129,34 +129,34 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
         <div className="relative rounded-md border">
           <div ref={tableContainerRef} className="overflow-auto max-h-[600px]">
             <table className="w-full caption-bottom text-sm">
-              <thead className="sticky top-0 z-10 bg-background border-b">
+              <thead className="sticky top-0 z-10 bg-background dark:bg-gray-950 border-b">
                 <tr className="border-b transition-colors hover:bg-transparent">
-                  <th colSpan={6} className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground">
+                  <th colSpan={6} className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300">
                     Calls
                   </th>
-                  <th rowSpan={2} className="h-12 px-4 text-center bg-primary/10 align-middle font-medium w-[100px]">
+                  <th rowSpan={2} className="h-12 px-4 text-center bg-primary/10 dark:bg-primary/20 align-middle font-medium w-[100px] dark:text-white">
                     Strike
                   </th>
-                  <th colSpan={6} className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground">
+                  <th colSpan={6} className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300">
                     Puts
                   </th>
                 </tr>
                 <tr className="border-b transition-colors hover:bg-transparent">
                   {/* Call columns */}
-                  <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">IV</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">CHNG</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">BID</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">ASK</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">LAST</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px] ">SPFV</th>
+                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">IV</th>
+                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">CHNG</th>
+                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">BID</th>
+                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">ASK</th>
+                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">LAST</th>
+                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px] ">SPFV</th>
                   {/* Strike is in the middle */}
                   {/* Put columns - match same order as in the data rows */}
-                  <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px] ">SPFV</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">LAST</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">BID</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">ASK</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">CHNG</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 align-middle font-medium text-muted-foreground w-[90px]">IV</th>
+                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px] ">SPFV</th>
+                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">LAST</th>
+                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">BID</th>
+                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">ASK</th>
+                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">CHNG</th>
+                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">IV</th>
                 </tr>
               </thead>
               <tbody className="[&_tr:last-child]:border-0">
@@ -200,46 +200,46 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                       key={strike} 
                       className={cn(
                         "border-b transition-colors",
-                        index % 2 === 0 ? "bg-muted/20" : "",
-                        hasAnySPFV ? "bg-blue-50/20" : ""
+                        index % 2 === 0 ? "bg-muted/20 dark:bg-gray-900/60" : "dark:bg-gray-950",
+                        hasAnySPFV ? "bg-blue-50/20 dark:bg-blue-950/30" : ""
                       )}
                     >
                       {/* Call side */}
                       <td className={cn(
                         "p-4 align-middle text-center",
-                        isCallInTheMoney ? "bg-primary/10" : ""
+                        isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {callOption.volatility ? `${(callOption.volatility * 100).toFixed(2)}%` : "-"}
                       </td>
                       <td className={cn(
                         "p-4 align-middle text-center",
-                        isCallInTheMoney ? "bg-primary/10" : "",
-                        callChange > 0 ? "text-green-600" : callChange < 0 ? "text-red-600" : ""
+                        isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : "",
+                        callChange > 0 ? "text-green-600 dark:text-green-400" : callChange < 0 ? "text-red-600 dark:text-red-400" : ""
                       )}>
                         {callChange !== 0 ? callChange.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
                         "p-4 align-middle text-center",
-                        isCallInTheMoney ? "bg-primary/10" : ""
+                        isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {callOption.bid ? callOption.bid.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
                         "p-4 align-middle text-center",
-                        isCallInTheMoney ? "bg-primary/10" : ""
+                        isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {callOption.ask ? callOption.ask.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
                         "p-4 align-middle text-center",
-                        isCallInTheMoney ? "bg-primary/10" : ""
+                        isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {callOption.last ? callOption.last.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
                         "p-4 align-middle text-center font-medium",
-                        isCallInTheMoney ? "bg-primary/10" : "",
-                        callSPFV ? "text-blue-600 bg-blue-50/50" : ""
+                        isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : "",
+                        callSPFV ? "text-blue-600 bg-blue-50/50 dark:text-blue-300 dark:bg-blue-900/40" : ""
                       )}>
                         {callSPFV ? 
                           (typeof callSPFV === 'number' ? 
@@ -251,18 +251,18 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                       {/* Strike price (middle column) */}
                       <td className={cn(
                         "p-4 align-middle text-center font-bold",
-                        "bg-gray-100", 
-                        isCurrentPrice ? "bg-yellow-100  outline-1 outline-yellow-400" : ""
+                        "bg-gray-100 dark:bg-gray-800", 
+                        isCurrentPrice ? "bg-yellow-100 dark:bg-yellow-900/50 outline-1 outline-yellow-400 dark:outline-yellow-600" : ""
                       )}>
                         {strike.toFixed(2)}
-                        {isCurrentPrice && <span className="block text-xs font-normal text-gray-600">Current</span>}
+                        {isCurrentPrice && <span className="block text-xs font-normal text-gray-600 dark:text-gray-400">Current</span>}
                       </td>
                       
                       {/* Put side */}
                       <td className={cn(
                         "p-4 align-middle text-center font-medium",
-                        isPutInTheMoney ? "bg-primary/10" : "",
-                        putSPFV ? "text-blue-600 bg-blue-50/50" : ""
+                        isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : "",
+                        putSPFV ? "text-blue-600 bg-blue-50/50 dark:text-blue-300 dark:bg-blue-900/40" : ""
                       )}>
                         {putSPFV ? 
                           (typeof putSPFV === 'number' ? 
@@ -272,32 +272,32 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                       </td>
                       <td className={cn(
                         "p-4 align-middle text-center",
-                        isPutInTheMoney ? "bg-primary/10" : ""
+                        isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {putOption.last ? putOption.last.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
                         "p-4 align-middle text-center",
-                        isPutInTheMoney ? "bg-primary/10" : ""
+                        isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {putOption.bid ? putOption.bid.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
                         "p-4 align-middle text-center",
-                        isPutInTheMoney ? "bg-primary/10" : ""
+                        isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {putOption.ask ? putOption.ask.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
                         "p-4 align-middle text-center",
-                        isPutInTheMoney ? "bg-primary/10" : "",
-                        putChange > 0 ? "text-green-600" : putChange < 0 ? "text-red-600" : ""
+                        isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : "",
+                        putChange > 0 ? "text-green-600 dark:text-green-400" : putChange < 0 ? "text-red-600 dark:text-red-400" : ""
                       )}>
                         {putChange !== 0 ? putChange.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
                         "p-4 align-middle text-center",
-                        isPutInTheMoney ? "bg-primary/10" : ""
+                        isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {putOption.volatility ? `${(putOption.volatility * 100).toFixed(2)}%` : "-"}
                       </td>
