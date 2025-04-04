@@ -104,6 +104,7 @@ export async function GET(request: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
       },
+      cache: 'no-store'
     });
 
     if (!chainResponse.ok) {
@@ -128,6 +129,7 @@ export async function GET(request: NextRequest) {
       headers: {
         'Content-Type': 'application/json',
       },
+      cache: 'no-store'
     });
 
     if (!spfvResponse.ok) {

@@ -32,7 +32,10 @@ export async function GET(req: Request) {
     }
 
     const response = await fetch(
-      `${TIERS_API_URL}?expiration=${expirationDate}&symbol=${symbol}`
+      `${TIERS_API_URL}?expiration=${expirationDate}&symbol=${symbol}`,
+      {
+        cache: 'no-store'
+      }
     );
 
     if (!response.ok) {
