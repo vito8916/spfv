@@ -34,10 +34,10 @@ import {
   optionsCalculatorSchema,
 } from "@/lib/validations/options-calculator";
 import { toast } from "sonner";
-import SymbolsListSelect from "./symbols-list-select";
 import { isMarketOpen } from "@/utils/utils";
 import { OptionsResultsTable } from "./options-results-table";
 import { Skeleton } from "@/components/ui/skeleton";
+import SymbolsListSelect from "./symbols-list-select";
 
 interface SPFVData {
   spfv: {

@@ -1,7 +1,22 @@
-import { FormControl } from '@/components/ui/form'
-import { Select, SelectValue, SelectTrigger, SelectItem, SelectContent } from '@/components/ui/select'
-import React from 'react'
+import React, { useState } from 'react'
 import { FieldValues } from 'react-hook-form'
+import { cn } from "@/lib/utils"
+import { Check, ChevronsUpDown } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { FormControl } from '@/components/ui/form'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 
 const symbols = [
     { value: "AAL", label: "AAL" },
@@ -199,28 +214,53 @@ const symbols = [
     { value: "ZIM", label: "ZIM" },
 ];
 
-
 export default function SymbolsListSelect({ field }: { field: FieldValues}) {
-      
+  const [open, setOpen] = useState(false)
+  
   return (
-    <div>
-        <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select symbol" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                            {symbols.map((symbol: { value: string; label: string }) => (
-                            <SelectItem key={symbol.value} value={symbol.value}>
-                              {symbol.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select> 
-    </div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <FormControl>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between"
+          >
+            {field.value
+              ? symbols.find((symbol) => symbol.value === field.value)?.label || field.value
+              : "Select symbol..."}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </FormControl>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0">
+        <Command>
+          <CommandInput placeholder="Search symbol..." />
+          <CommandList>
+            <CommandEmpty>No symbol found.</CommandEmpty>
+            <CommandGroup className="max-h-[300px] overflow-y-auto">
+              {symbols.map((symbol) => (
+                <CommandItem
+                  key={symbol.value}
+                  onSelect={() => {
+                    field.onChange(symbol.value)
+                    setOpen(false)
+                  }}
+                >
+                  {symbol.label}
+                  <Check
+                    className={cn(
+                      "ml-auto h-4 w-4",
+                      field.value === symbol.value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   )
 }
