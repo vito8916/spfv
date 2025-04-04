@@ -15,7 +15,7 @@ interface TierCardProps {
 export function TierCard({ tier, ratio, callStrike, callMidpoint, putStrike, putMidpoint }: TierCardProps) {
   // Determinar si el ratio es favorable 
   // (estos valores son arbitrarios, ajústalos según tus criterios de negocio)
-  const isGoodRatio = callStrike > putStrike;
+  const isGoodRatio = callMidpoint > putMidpoint;
   //const isExcellentRatio = ratio >= 1.0;
   
   // Formatear números con 2 decimales
