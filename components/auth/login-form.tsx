@@ -137,7 +137,7 @@ const LoginForm = () => {
             <div className="text-muted-foreground text-center text-sm">
               Don&#39;t have an account?{" "}
               <Link href={"/sign-up"} tabIndex={5}>
-                Sign up
+                Create an account
               </Link>
             </div>
           </form>
