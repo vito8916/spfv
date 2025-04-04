@@ -16,7 +16,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { FieldValues } from 'react-hook-form'
 const symbols = [
     {
       value: "TSLA",
@@ -40,7 +39,7 @@ const symbols = [
     },
   ]
 
-export default function SymbolListSelector({ field }: { field: FieldValues }) {
+export default function SymbolListSelector() {
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState("")
 
