@@ -50,9 +50,9 @@ export function isMarketOpen(): boolean {
   // Verifica si es sábado o domingo
   if (day === 0 || day === 6) return false;
 
-  if (day === 4) {
+  /* if (day === 4) {
     return true;
-  }
+  } */
 
   // Verifica si está dentro del horario de mercado (9:30am - 4:00pm ET)
   if (
