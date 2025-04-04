@@ -4,6 +4,7 @@ import { format } from "date-fns"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import { useEffect, useRef } from "react"
 
 interface SPFVData {
   spfv: {
@@ -38,6 +39,9 @@ interface OptionsResultsTableProps {
 }
 
 export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDate, underlyingPrice }: OptionsResultsTableProps) {
+  // Add a ref for the table container
+  const tableContainerRef = useRef<HTMLDivElement>(null)
+  
   // Helper function to calculate price change
   const calculateChange = (current: number, previous: number) => {
     if (!current || !previous) return 0;
@@ -63,6 +67,38 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
     ...putOptions.filter(option => option.spfvData?.spfv?.spfv).map(option => option.strikePrice)
   ]);
 
+  // Use effect to scroll to the current price when component is mounted or data changes
+  useEffect(() => {
+    if (tableContainerRef.current && sortedStrikes.length > 0 && underlyingPrice) {
+      // Find the index of the strike closest to the current price
+      let closestIndex = 0;
+      let minDiff = Math.abs(sortedStrikes[0] - underlyingPrice);
+
+      for (let i = 1; i < sortedStrikes.length; i++) {
+        const diff = Math.abs(sortedStrikes[i] - underlyingPrice);
+        if (diff < minDiff) {
+          minDiff = diff;
+          closestIndex = i;
+        }
+      }
+
+      // Get all table rows
+      const tableRows = tableContainerRef.current.querySelectorAll('tbody tr');
+      
+      if (tableRows.length > 0 && tableRows[closestIndex]) {
+        // Calculate the scroll position to center the target row
+        const targetRow = tableRows[closestIndex] as HTMLElement;
+        const container = tableContainerRef.current;
+        const containerHeight = container.clientHeight;
+        const targetOffset = targetRow.offsetTop;
+        
+        // Set the scroll position to center the target row
+        // Subtract half the container height to center it
+        container.scrollTop = targetOffset - (containerHeight / 2) + (targetRow.clientHeight / 2);
+      }
+    }
+  }, [sortedStrikes, underlyingPrice, callOptions, putOptions]);
+
   return (
     <Card className="mt-6">
       <CardHeader>
@@ -71,7 +107,7 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
             <CardTitle className="text-xl">
               {symbol} Option Chain
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="font-bold">
               {expiryDate ? `Expiring ${format(expiryDate, "MMMM d, yyyy")}` : ""}
               {underlyingPrice ? ` • Stock Price: $${underlyingPrice.toFixed(2)}` : ""}
             </CardDescription>
@@ -91,7 +127,7 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
       </CardHeader>
       <CardContent className="p-0">
         <div className="relative rounded-md border">
-          <div className="overflow-auto max-h-[600px]">
+          <div ref={tableContainerRef} className="overflow-auto max-h-[600px]">
             <table className="w-full caption-bottom text-sm">
               <thead className="sticky top-0 z-10 bg-background border-b">
                 <tr className="border-b transition-colors hover:bg-transparent">
