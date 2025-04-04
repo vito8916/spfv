@@ -23,6 +23,7 @@ interface OptionData {
   strikePrice: number;
   bid: number;
   ask: number;
+  mid: number;
   volatility: number; // IV
   prevClose?: number; // Used to calculate change
   last?: number; // Current price, used to calculate change
@@ -131,13 +132,13 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
             <table className="w-full caption-bottom text-sm">
               <thead className="sticky top-0 z-10 bg-background dark:bg-gray-950 border-b">
                 <tr className="border-b transition-colors hover:bg-transparent">
-                  <th colSpan={6} className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300">
+                  <th colSpan={7} className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300">
                     Calls
                   </th>
                   <th rowSpan={2} className="h-12 px-4 text-center bg-primary/10 dark:bg-primary/20 align-middle font-medium w-[100px] dark:text-white">
                     Strike
                   </th>
-                  <th colSpan={6} className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300">
+                  <th colSpan={7} className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300">
                     Puts
                   </th>
                 </tr>
@@ -147,12 +148,14 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                   <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">CHNG</th>
                   <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">BID</th>
                   <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">ASK</th>
+                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">MID</th>
                   <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">LAST</th>
                   <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px] ">SPFV</th>
                   {/* Strike is in the middle */}
                   {/* Put columns - match same order as in the data rows */}
                   <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px] ">SPFV</th>
                   <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">LAST</th>
+                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">MID</th>
                   <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">BID</th>
                   <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">ASK</th>
                   <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">CHNG</th>
@@ -165,6 +168,7 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                     strikePrice: strike,
                     bid: 0,
                     ask: 0,
+                    mid: 0,
                     volatility: 0,
                     last: 0,
                     prevClose: 0,
@@ -175,6 +179,7 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                     strikePrice: strike,
                     bid: 0,
                     ask: 0,
+                    mid: 0,
                     volatility: 0,
                     last: 0,
                     prevClose: 0,
@@ -234,6 +239,12 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                         "p-4 align-middle text-center",
                         isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
+                        {callOption.mid ? callOption.mid.toFixed(2) : "-"}
+                      </td>
+                      <td className={cn(
+                        "p-4 align-middle text-center",
+                        isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
+                      )}>
                         {callOption.last ? callOption.last.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
@@ -275,6 +286,12 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                         isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {putOption.last ? putOption.last.toFixed(2) : "-"}
+                      </td>
+                      <td className={cn(
+                        "p-4 align-middle text-center",
+                        isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
+                      )}>
+                        {putOption.mid ? putOption.mid.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
                         "p-4 align-middle text-center",

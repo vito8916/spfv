@@ -32,6 +32,7 @@ interface Strike {
   last: number;
   bid: number;
   ask: number;
+  mid: number;
   prevClose: number;
   volatility: number;
   volume: number;

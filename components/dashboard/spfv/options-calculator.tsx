@@ -55,6 +55,7 @@ interface OptionData {
   strikePrice: number;
   bid: number;
   ask: number;
+  mid: number;
   volatility: number;
   prevClose?: number;
   last?: number;
@@ -65,6 +66,7 @@ interface ChainOptionData {
   strikePrice: number;
   bid: number;
   ask: number;
+  mid: number;
   volatility: number;
   prevClose: number;
   last: number;
@@ -140,7 +142,8 @@ export function OptionsCalculator() {
         const callOptionsData = callStrikes.map((option: ChainOptionData) => ({
           strikePrice: option.strikePrice,
           bid: option.bid,
-          ask: option.ask, 
+          ask: option.ask,
+          mid: option.mid || (option.bid && option.ask ? (option.bid + option.ask) / 2 : 0),
           volatility: option.volatility,
           prevClose: option.prevClose,
           last: option.last,
@@ -153,6 +156,7 @@ export function OptionsCalculator() {
           strikePrice: option.strikePrice,
           bid: option.bid,
           ask: option.ask,
+          mid: option.mid || (option.bid && option.ask ? (option.bid + option.ask) / 2 : 0),
           volatility: option.volatility,
           prevClose: option.prevClose,
           last: option.last,
