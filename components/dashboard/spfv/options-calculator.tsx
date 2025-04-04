@@ -364,7 +364,7 @@ export function OptionsCalculator() {
       )}
 
       {/* Use the TierSection component */}
-      {showTiers && <TiersList symbol={symbol} expiration={expirationDate} />}
+      {showTiers && <TiersList symbol={symbol} expiration={expirationDate} autoRefresh={autoRefresh} />}
 
       {isLoading && !isRefreshing && (
         <div className="space-y-6">
