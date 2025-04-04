@@ -15,9 +15,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, LoaderCircle } from "lucide-react";
+import { CalendarIcon, LoaderCircle, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import TiersList from "./tiers-list";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -84,32 +84,35 @@ export function OptionsCalculator() {
   const [putOptions, setPutOptions] = useState<OptionData[]>([]);
   const [underlyingPrice, setUnderlyingPrice] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // Reference to store the interval ID
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
   // Initialize form with React Hook Form and Zod resolver
   const form = useForm<OptionsCalculatorFormValues>({
     resolver: zodResolver(optionsCalculatorSchema),
   });
 
-  // Submit handler
-  async function onSubmit(data: OptionsCalculatorFormValues) {
-    if (!isMarketOpen()) {
-      toast.warning("The market is currently closed.");
-      return;
-    }
-
-    setSymbol(data.symbol);
-    setExpirationDate(data.expirationDate);
-    setShowTiers(true);
-    setShowResults(false);
-    setIsLoading(true);
+  // Fetch data function that can be reused for initial load and refreshes
+  const fetchData = async (formData: OptionsCalculatorFormValues) => {
+    const isRefresh = isRefreshing;
+    if (!isRefresh) setIsLoading(true);
     
     try {
       // Format date as YYYY-MM-DD
       //const formattedDate = format(data.expirationDate, "yyyy-MM-dd");
       
       // Use the filtered chain API endpoint that returns strikes with SPFV data
-      const url = `/api/spfv/get-filtered-chain?symbol=${data.symbol}&date=${data.expirationDate}`;
+      const url = `/api/spfv/get-filtered-chain?symbol=${formData.symbol}&date=${formData.expirationDate}`;
       
-      console.log(`Submitting request to: ${url}`);
+      if (!isRefresh) {
+        console.log(`Submitting request to: ${url}`);
+      } else {
+        console.log(`Refreshing data from: ${url}`);
+      }
       
       const response = await fetch(url, {
         method: 'GET',
@@ -127,7 +130,11 @@ export function OptionsCalculator() {
       const responseData = await response.json();
       
       if (responseData) {
-        console.log("Chain data with SPFV values received successfully", responseData);
+        if (!isRefresh) {
+          console.log("Chain data with SPFV values received successfully", responseData);
+        } else {
+          console.log("Chain data refreshed successfully");
+        }
         
         // Extract strikes from the response
         const callStrikes = responseData.callOptionChain?.strikes || [];
@@ -160,23 +167,30 @@ export function OptionsCalculator() {
           spfvData: option.spfvData
         }));
         
-        console.log(`Processed ${callOptionsData.length} call options and ${putOptionsData.length} put options with SPFV values`);
+        if (!isRefresh) {
+          console.log(`Processed ${callOptionsData.length} call options and ${putOptionsData.length} put options with SPFV values`);
+        }
         
         setCallOptions(callOptionsData);
         setPutOptions(putOptionsData);
         setShowResults(true);
+        setLastRefreshTime(new Date());
         
-        toast.success(`Option chain loaded with ${callOptionsData.length} calls and ${putOptionsData.length} puts containing SPFV values`);
+        if (!isRefresh) {
+          toast.success(`Option chain loaded with ${callOptionsData.length} calls and ${putOptionsData.length} puts containing SPFV values`);
+        }
       } else {
         console.error("Empty response data received");
-        toast.error('No data received from server');
+        if (!isRefresh) {
+          toast.error('No data received from server');
+        }
       }
     } catch (error) {
       // Show detailed error information
-      let errorMessage = 'Failed to load option chain';
+      let errorMessage = isRefresh ? 'Failed to refresh data' : 'Failed to load option chain';
       
       if (error instanceof Error) {
-        console.error('Error fetching option chain:', error.message);
+        console.error(isRefresh ? 'Error refreshing data:' : 'Error fetching option chain:', error.message);
         console.error('Stack:', error.stack);
         errorMessage = `Error: ${error.message}`;
       } else {
@@ -187,9 +201,58 @@ export function OptionsCalculator() {
         description: 'Please try again or contact support if the problem persists'
       });
     } finally {
-      setIsLoading(false);
+      if (!isRefresh) setIsLoading(false);
+      setIsRefreshing(false);
     }
+  };
+
+  // Submit handler
+  async function onSubmit(data: OptionsCalculatorFormValues) {
+    if (!isMarketOpen()) {
+      toast.warning("The market is currently closed.");
+      return;
+    }
+
+    setSymbol(data.symbol);
+    setExpirationDate(data.expirationDate);
+    setShowTiers(true);
+    setShowResults(false);
+    
+    // Call the fetchData function with the form data
+    await fetchData(data);
   }
+  
+  // Handle manual refresh button click
+  const handleRefresh = async () => {
+    if (!symbol || !expirationDate) return;
+    
+    setIsRefreshing(true);
+    await fetchData({ symbol, expirationDate });
+  };
+  
+  // Set up auto-refresh interval when autoRefresh is enabled
+  useEffect(() => {
+    // Clear any existing interval
+    if (refreshIntervalRef.current) {
+      clearInterval(refreshIntervalRef.current);
+      refreshIntervalRef.current = null;
+    }
+    
+    // If auto-refresh is enabled and we have valid data to refresh
+    if (autoRefresh && showResults && symbol && expirationDate) {
+      refreshIntervalRef.current = setInterval(() => {
+        setIsRefreshing(true);
+        fetchData({ symbol, expirationDate });
+      }, 10000); // 10 seconds
+    }
+    
+    // Clean up on unmount
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+    };
+  }, [autoRefresh, showResults, symbol, expirationDate]);
 
   return (
     <div className="grid gap-6">
@@ -299,7 +362,7 @@ export function OptionsCalculator() {
       {/* Use the TierSection component */}
       {showTiers && <TiersList symbol={symbol} expiration={expirationDate} />}
 
-      {isLoading && (
+      {isLoading && !isRefreshing && (
         <div className="space-y-6">
             <h3 className="text-lg font-medium">Loading Option Chain...</h3>
             <div className="grid grid-cols-1 gap-4">
@@ -314,7 +377,40 @@ export function OptionsCalculator() {
 
       {showResults && (
         <>
-          <h2 className="text-xl font-bold">Options with SPFV Values</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold">Options with SPFV Values</h2>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="auto-refresh"
+                  checked={autoRefresh}
+                  onChange={(e) => setAutoRefresh(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                />
+                <label htmlFor="auto-refresh" className="text-sm text-muted-foreground">
+                  Auto-refresh (10s)
+                </label>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleRefresh}
+                disabled={isRefreshing || !symbol || !expirationDate}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
+                Refresh
+              </Button>
+              
+              {lastRefreshTime && (
+                <span className="text-xs text-muted-foreground">
+                  Last updated: {format(lastRefreshTime, "HH:mm:ss")}
+                </span>
+              )}
+            </div>
+          </div>
           
           <OptionsResultsTable
             callOptions={callOptions}
