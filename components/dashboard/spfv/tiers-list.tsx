@@ -98,10 +98,8 @@ export default function TiersList({ symbol, expiration, autoRefresh = false }: T
     
     // Configurar auto-refresco si está habilitado
     if (autoRefresh && symbol && expiration) {
-      setIsRefreshing(true);
-      console.log("Setting up auto-refresh for tiers list");
       intervalRef = setInterval(() => {
-        console.log("Auto-refreshing tiers data");
+        setIsRefreshing(true);
         fetchTiers();
       }, 10000); // refresca cada 10 segundos
     }
@@ -189,7 +187,7 @@ export default function TiersList({ symbol, expiration, autoRefresh = false }: T
   }
 
   // Ordenar tiers por ratio (de mayor a menor)
-  const sortedTiers = [...validTiers].sort((a, b) => b.ratio - a.ratio);
+  const sortedTiers = [...validTiers].sort((a, b) => a.ratio - b.ratio);
 
   return (
     <div className="space-y-6">
