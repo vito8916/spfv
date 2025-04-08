@@ -27,7 +27,14 @@ export async function GET(req: Request) {
     }
 
     const response = await fetch(
-      `${TIERS_API_URL}?symbol=${symbol}&expirationDate=${expirationDate}`
+      `${TIERS_API_URL}?symbol=${symbol}&expirationDate=${expirationDate}`,
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Content-Type': 'application/json'
+        },
+        cache: 'no-store'
+      }
     );
 
     if (!response.ok) {
