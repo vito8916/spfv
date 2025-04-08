@@ -103,7 +103,8 @@ export async function GET(request: NextRequest) {
     
     const chainResponse = await fetch(chainApiUrl, {
       headers: {
-        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Content-Type': 'application/json'
       },
       cache: 'no-store'
     });
@@ -128,7 +129,8 @@ export async function GET(request: NextRequest) {
     
     const spfvResponse = await fetch(spfvApiUrl, {
       headers: {
-        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Content-Type': 'application/json'
       },
       cache: 'no-store'
     });
