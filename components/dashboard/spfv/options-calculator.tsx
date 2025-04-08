@@ -121,6 +121,7 @@ export function OptionsCalculator() {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
         },
         cache: "no-store",
       });
