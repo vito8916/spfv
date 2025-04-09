@@ -39,6 +39,7 @@ import { OptionsResultsTable } from "./options-results-table";
 import { Skeleton } from "@/components/ui/skeleton";
 import SymbolsListSelect from "./symbols-list-select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { getFilteredSymbolChain } from "@/utils/spfv/getFilteredSymbolChain";
 
 interface SPFVData {
   spfv: {
@@ -100,53 +101,24 @@ export function OptionsCalculator() {
   });
 
   // Fetch data function that can be reused for initial load and refreshes
-  const fetchData = async (formData: OptionsCalculatorFormValues) => {
+  const fetchData = async (symbol: string, expirationDate: Date) => {
     const isRefresh = isRefreshing;
     if (!isRefresh) setIsLoading(true);
 
     try {
-      // Format date as YYYY-MM-DD
-      //const formattedDate = format(data.expirationDate, "yyyy-MM-dd");
 
-      // Use the filtered chain API endpoint that returns strikes with SPFV data
-      const url = `/api/spfv/get-filtered-chain?symbol=${formData.symbol}&date=${formData.expirationDate}`;
+      const response = await getFilteredSymbolChain(symbol, expirationDate);
 
-      if (!isRefresh) {
-        console.log(`Submitting request to: ${url}`);
-      } else {
-        console.log(`Refreshing data from: ${url}`);
+      if (!response) {
+        throw new Error(`API error: ${response.status}`);
       }
 
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-        },
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API error: ${response.status} - ${errorText}`);
-      }
-
-      const responseData = await response.json();
-
-      if (responseData) {
-        if (!isRefresh) {
-          console.log(
-            "Chain data with SPFV values received successfully",
-            responseData
-          );
-        } else {
-          console.log("Chain data refreshed successfully");
-        }
+      if (response) {
 
         // Extract strikes from the response
-        const callStrikes = responseData.callOptionChain?.strikes || [];
-        const putStrikes = responseData.putOptionChain?.strikes || [];
-        const underlyingPrice = responseData.underlyingPrice || 0;
+        const callStrikes = response.callOptionChain?.strikes || [];
+        const putStrikes = response.putOptionChain?.strikes || [];
+        const underlyingPrice = response.underlyingPrice || 0;
 
         setUnderlyingPrice(underlyingPrice);
 
@@ -180,12 +152,6 @@ export function OptionsCalculator() {
           spfvData: option.spfvData,
         }));
 
-        if (!isRefresh) {
-          console.log(
-            `Processed ${callOptionsData.length} call options and ${putOptionsData.length} put options with SPFV values`
-          );
-        }
-
         setCallOptions(callOptionsData);
         setPutOptions(putOptionsData);
         setShowResults(true);
@@ -196,6 +162,7 @@ export function OptionsCalculator() {
             `Option chain loaded with ${callOptionsData.length} calls and ${putOptionsData.length} puts containing SPFV values`
           );
         }
+
       } else {
         console.error("Empty response data received");
         if (!isRefresh) {
@@ -238,11 +205,13 @@ export function OptionsCalculator() {
 
     setSymbol(data.symbol);
     setExpirationDate(data.expirationDate);
+    console.log("SYMBOL:::::::::", data.symbol);
+    console.log("EXPIRATION DATE:::::::::", data.expirationDate);
     setShowTiers(true);
     setShowResults(false);
 
-    // Call the fetchData function with the form data
-    await fetchData(data);
+    // Call the fetchData function with the form data directly
+    await fetchData(data.symbol, data.expirationDate);
   }
 
   // Handle manual refresh button click
@@ -250,7 +219,7 @@ export function OptionsCalculator() {
     if (!symbol || !expirationDate) return;
 
     setIsRefreshing(true);
-    await fetchData({ symbol, expirationDate });
+    await fetchData(symbol!, expirationDate!);
   };
 
   // Set up auto-refresh interval when autoRefresh is enabled
@@ -265,7 +234,7 @@ export function OptionsCalculator() {
     if (autoRefresh && showResults && symbol && expirationDate) {
       refreshIntervalRef.current = setInterval(() => {
         setIsRefreshing(true);
-        fetchData({ symbol, expirationDate });
+        fetchData(symbol!, expirationDate!);
       }, 10000); // 10 seconds
     }
 

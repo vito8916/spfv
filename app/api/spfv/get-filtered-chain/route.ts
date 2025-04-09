@@ -1,6 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { format } from "date-fns";
+import { revalidatePath } from "next/cache";
 // API endpoints
 const CHAIN_API_URL = `${process.env.SPFV_API_URL}/symbol-chain`;
 const SPFV_API_URL = `${process.env.SPFV_API_URL}/symbol-multi-value-live`;
@@ -226,7 +227,7 @@ export async function GET(request: NextRequest) {
     };
 
     console.log(`Returning data with ${processedCallOptions.length} calls and ${processedPutOptions.length} puts for ${strikesWithSPFV.size} unique strikes`);
-    
+    revalidatePath('/spfv/calculator')
     return NextResponse.json(combinedResponse);
     
   } catch (error) {
