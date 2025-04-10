@@ -1,0 +1,111 @@
+/*
+https://spfv.optionalitytrading.com/api/v1.0/SpfvApi/symbol-chain?symbol=TSLA&EndDateTime=20250502&callOrPut=BOTH&strike.fields=spfv
+*/
+
+
+{
+    "fedRate": 4.399,
+    "symbol": "TSLA",
+    "requestedType": "BOTH",
+    "isMarketOpen": true,
+    "callOptionChain": {
+        "symbol": "TSLA",
+        "lastTradePrice": 241.31,
+        "lastTradeAmountChange": -25.83,
+        "lastTradePercentChange": -9.669087,
+        "underlyingPrice": 241.31,
+        "marketIsCurrentlyOpen": true,
+        "strikes": [
+            {
+                "milliseconds": 1743790945193,
+                "uHash": "WQa7PQqi7pE0zTDW3Pj3FnuzQxEhZTvifcbPV51LZeg=",
+                "symbol": "TSLA",
+                "contract": "@TSLA  250502C00120000",
+                "strategyType": 0,
+                "callOrPut": 0,
+                "longOrShort": null,
+                "strikePrice": 120.0,
+                "expirationDate": "2025-05-02T00:00:00",
+                "expirationYear": 2025,
+                "expirationMonth": 5,
+                "expirationDay": 2,
+                "daysToExpiration": 28,
+                "last": 145.35,
+                "bid": 122.05,
+                "mid": 123.475,
+                "ask": 124.9,
+                "calculatedMidpoint": 123.48,
+                "currentStockPrice": null,
+                "prevClose": 145.35,
+                "volatility": 1.52399,
+                "volume": 0.0,
+                "openInterest": 93.0,
+                "delta": 0.96963,
+                "rho": 0.08526,
+                "theta": -0.13768,
+                "gamma": 0.00067,
+                "vega": 0.04606,
+                "premium": 0.0,
+                "spfv": {
+                    "spfv": 1.34,
+                    "symbol": "TSLA",
+                    "callPutIndicator": "C",
+                    "tte": 28,
+                    "strikeDiff": 0.0,
+                    "expiration": "2025-05-02T00:00:00",
+                    "currentUnderlyingPrice": 241.31
+                }
+            }
+        ]
+    },
+    "putOptionChain": {
+        "symbol": "TSLA",
+        "lastTradePrice": 241.31,
+        "lastTradeAmountChange": -25.83,
+        "lastTradePercentChange": -9.669087,
+        "underlyingPrice": 241.31,
+        "marketIsCurrentlyOpen": true,
+        "strikes": [
+            {
+                "milliseconds": 1743790945774,
+                "uHash": "QJ23VGAbNbAfpXINjbg+AKalckp5fRnKWFMVDRFsW7c=",
+                "symbol": "TSLA",
+                "contract": "@TSLA  250502P00120000",
+                "strategyType": 0,
+                "callOrPut": 0,
+                "longOrShort": null,
+                "strikePrice": 120.0,
+                "expirationDate": "2025-05-02T00:00:00",
+                "expirationYear": 2025,
+                "expirationMonth": 5,
+                "expirationDay": 2,
+                "daysToExpiration": 28,
+                "last": 1.35,
+                "bid": 1.31,
+                "mid": 1.335,
+                "ask": 1.36,
+                "calculatedMidpoint": 1.34,
+                "currentStockPrice": null,
+                "prevClose": 0.52,
+                "volatility": 1.50863,
+                "volume": 656.0,
+                "openInterest": 1595.0,
+                "delta": -0.02925,
+                "rho": -0.00647,
+                "theta": -0.11913,
+                "gamma": 0.00066,
+                "vega": 0.04469,
+                "premium": 0.0,
+                "spfv": {
+                    "spfv": 1.34,
+                    "symbol": "TSLA",
+                    "callPutIndicator": "P",
+                    "tte": 28,
+                    "strikeDiff": 0.0,
+                    "expiration": "2025-05-02T00:00:00",
+                    "currentUnderlyingPrice": 241.31
+                }
+            }
+        ]
+    }
+}

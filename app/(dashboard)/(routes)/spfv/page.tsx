@@ -22,7 +22,8 @@ import SpfvIconTool from "@/components/shared/spfv-icon-tool";
 // Loading component
 function SPFVToolSkeleton() {
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+    <div className="flex flex-1 gap-4 p-4 pt-0">
+      <Skeleton className="h-[250px] w-[400px] rounded-xl" />
       <Skeleton className="h-[250px] w-[400px] rounded-xl" />
     </div>
   );
@@ -116,6 +117,39 @@ async function SPFVContent({ user }: { user: User }) {
           </CardHeader>
           <CardContent>
             <Link href="/spfv/calculator" className="w-full">
+              <button className="flex items-center justify-center w-full text-sm bg-primary/10 text-primary hover:bg-primary/20 px-3 py-2 rounded-md font-medium mt-2">
+                Launch Tool
+                <ChevronRight className="ml-1 h-4 w-4" />
+              </button>
+            </Link>
+            {isUnsubscribed && hasAccess && (
+              <p className="text-xs text-amber-600 mt-2 text-center">
+                Access until {formatDate(subscription?.current_period_end)}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+        <Card
+          className={`relative min-h-[250px] max-w-[400px] justify-between border overflow-hidden shadow hover:shadow-md transition-all duration-300 ${
+            !hasAccess ? "opacity-75 pointer-events-none" : ""
+          }`}
+        >
+          {/* <div className="absolute h-1 inset-x-0 top-0 bg-primary"></div> */}
+          <CardHeader>
+            <div className="flex items-start justify-between">
+              <div>
+                <CardTitle className="text-2xl font-bold text-primary">SP Stock Screener</CardTitle>
+                <CardDescription>
+                Find the best SP stocks based on fair value and relevant underlying conditions
+                </CardDescription>
+              </div>
+              <div className="rounded-full bg-primary/10 p-2">
+                <SpfvIconTool />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Link href="/spfv/screener" className="w-full">
               <button className="flex items-center justify-center w-full text-sm bg-primary/10 text-primary hover:bg-primary/20 px-3 py-2 rounded-md font-medium mt-2">
                 Launch Tool
                 <ChevronRight className="ml-1 h-4 w-4" />
