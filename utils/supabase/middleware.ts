@@ -51,7 +51,7 @@ export const updateSession = async (request: NextRequest) => {
 
     // Define routes
     const publicRoutes = ['/', '/sign-in', '/sign-up', '/auth/callback', '/auth/confirm'];
-    const protectedRoutes = ['/dashboard', '/settings', '/profile'];
+    const protectedRoutes = ['/dashboard', '/settings', '/profile', '/spfv/screener', '/spfv/calculator', '/spfv'];
     const currentPath = request.nextUrl.pathname;
 
     // Check if the user is on the registration route

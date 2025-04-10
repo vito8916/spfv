@@ -59,7 +59,7 @@ export function isMarketOpen(): boolean {
     return true;
   }
 
-  if (day === 2) {
+  if (day === 3) {
     return true;
   }
 
