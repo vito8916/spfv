@@ -37,9 +37,10 @@ interface OptionsResultsTableProps {
   symbol: string;
   expiryDate?: Date;
   underlyingPrice: number;
+  wasSubmitted?: boolean;
 }
 
-export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDate, underlyingPrice }: OptionsResultsTableProps) {
+export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDate, underlyingPrice, wasSubmitted }: OptionsResultsTableProps) {
   // Add a ref for the table container
   const tableContainerRef = useRef<HTMLDivElement>(null)
   
@@ -86,22 +87,22 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
       // Get all table rows
       const tableRows = tableContainerRef.current.querySelectorAll('tbody tr');
       
-      if (tableRows.length > 0 && tableRows[closestIndex]) {
+      if (tableRows.length > 0 && tableRows[closestIndex] && wasSubmitted) {
         // Calculate the scroll position to center the target row
-        //const targetRow = tableRows[closestIndex] as HTMLElement;
-        //const container = tableContainerRef.current;
-        //const containerHeight = container.clientHeight;
-        //const targetOffset = targetRow.offsetTop;
+        const targetRow = tableRows[closestIndex] as HTMLElement;
+        const container = tableContainerRef.current;
+        const containerHeight = container.clientHeight;
+        const targetOffset = targetRow.offsetTop;
         
         // Set the scroll position to center the target row
         // Subtract half the container height to center it
-        //container.scrollTop = targetOffset - (containerHeight / 2) + (targetRow.clientHeight / 2);
+        container.scrollTop = targetOffset - (containerHeight / 2) + (targetRow.clientHeight / 2);
       }
     }
-  }, [sortedStrikes, underlyingPrice, callOptions, putOptions]);
+  }, [sortedStrikes, underlyingPrice, callOptions, putOptions, wasSubmitted]);
 
   return (
-    <Card className="mt-6">
+    <Card>
       <CardHeader>
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
           <div>
@@ -132,34 +133,32 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
             <table className="w-full caption-bottom text-sm">
               <thead className="sticky top-0 z-10 bg-background dark:bg-gray-950 border-b">
                 <tr className="border-b transition-colors hover:bg-transparent">
-                  <th colSpan={7} className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300">
+                  <th colSpan={6} className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300">
                     Calls
                   </th>
-                  <th rowSpan={2} className="h-12 px-4 text-center bg-primary/10 dark:bg-primary/20 align-middle font-medium w-[100px] dark:text-white">
+                  <th rowSpan={2} className="h-12 px-4 text-center bg-gray-100 dark:bg-gray-800/50 align-middle font-medium w-[100px] dark:text-white">
                     Strike
                   </th>
-                  <th colSpan={7} className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300">
+                  <th colSpan={6} className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300">
                     Puts
                   </th>
                 </tr>
                 <tr className="border-b transition-colors hover:bg-transparent">
                   {/* Call columns */}
-                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">IV</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">CHNG</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">BID</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">ASK</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">MID</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">LAST</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px] ">SPFV</th>
+                  <th className="h-10 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">IV</th>
+                  <th className="h-10 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">CHNG</th>
+                  <th className="h-10 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">BID</th>
+                  <th className="h-10 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">ASK</th>
+                  <th className="h-10 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">LAST</th>
+                  <th className="h-10 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px] ">SPFV</th>
                   {/* Strike is in the middle */}
                   {/* Put columns - match same order as in the data rows */}
-                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px] ">SPFV</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">LAST</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">MID</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">BID</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">ASK</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">CHNG</th>
-                  <th className="h-12 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">IV</th>
+                  <th className="h-10 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px] ">SPFV</th>
+                  <th className="h-10 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">LAST</th>
+                  <th className="h-10 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">BID</th>
+                  <th className="h-10 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">ASK</th>
+                  <th className="h-10 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">CHNG</th>
+                  <th className="h-10 px-4 text-center bg-muted/30 dark:bg-gray-800/50 align-middle font-medium text-muted-foreground dark:text-gray-300 w-[90px]">IV</th>
                 </tr>
               </thead>
               <tbody className="[&_tr:last-child]:border-0">
@@ -211,44 +210,39 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                     >
                       {/* Call side */}
                       <td className={cn(
-                        "p-4 align-middle text-center",
+                        "px-4 py-1 align-middle text-center",
                         isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {callOption.volatility ? `${(callOption.volatility * 100).toFixed(2)}%` : "-"}
                       </td>
                       <td className={cn(
-                        "p-4 align-middle text-center",
+                        "px-4 py-1 align-middle text-center",
                         isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : "",
                         callChange > 0 ? "text-green-600 dark:text-green-400" : callChange < 0 ? "text-red-600 dark:text-red-400" : ""
                       )}>
                         {callChange !== 0 ? callChange.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
-                        "p-4 align-middle text-center",
+                        "px-4 py-1 align-middle text-center",
                         isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {callOption.bid ? callOption.bid.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
-                        "p-4 align-middle text-center",
+                        "px-4 py-1 align-middle text-center",
                         isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {callOption.ask ? callOption.ask.toFixed(2) : "-"}
                       </td>
+                      
                       <td className={cn(
-                        "p-4 align-middle text-center",
-                        isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
-                      )}>
-                        {callOption.mid ? callOption.mid.toFixed(2) : "-"}
-                      </td>
-                      <td className={cn(
-                        "p-4 align-middle text-center",
+                        "px-4 py-1 align-middle text-center",
                         isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {callOption.last ? callOption.last.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
-                        "p-4 align-middle text-center font-medium",
+                        "px-4 py-1 align-middle text-center font-medium",
                         isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : "",
                         callSPFV ? "text-blue-600 bg-blue-50/50 dark:text-blue-300 dark:bg-blue-900/40" : ""
                       )}>
@@ -261,7 +255,7 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                       
                       {/* Strike price (middle column) */}
                       <td className={cn(
-                        "p-4 align-middle text-center font-bold",
+                        "px-4 py-1 align-middle text-center font-bold",
                         "bg-gray-100 dark:bg-gray-800", 
                         isCurrentPrice ? "bg-yellow-100 dark:bg-yellow-900/50 outline-1 outline-yellow-400 dark:outline-yellow-600" : ""
                       )}>
@@ -271,7 +265,7 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                       
                       {/* Put side */}
                       <td className={cn(
-                        "p-4 align-middle text-center font-medium",
+                        "px-4 py-1 align-middle text-center font-medium",
                         isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : "",
                         putSPFV ? "text-blue-600 bg-blue-50/50 dark:text-blue-300 dark:bg-blue-900/40" : ""
                       )}>
@@ -282,38 +276,33 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                           ) : "-"}
                       </td>
                       <td className={cn(
-                        "p-4 align-middle text-center",
+                        "px-4 py-1 align-middle text-center",
                         isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {putOption.last ? putOption.last.toFixed(2) : "-"}
                       </td>
+                      
                       <td className={cn(
-                        "p-4 align-middle text-center",
-                        isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
-                      )}>
-                        {putOption.mid ? putOption.mid.toFixed(2) : "-"}
-                      </td>
-                      <td className={cn(
-                        "p-4 align-middle text-center",
+                        "px-4 py-1 align-middle text-center",
                         isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {putOption.bid ? putOption.bid.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
-                        "p-4 align-middle text-center",
+                        "px-4 py-1 align-middle text-center",
                         isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {putOption.ask ? putOption.ask.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
-                        "p-4 align-middle text-center",
+                        "px-4 py-1 align-middle text-center",
                         isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : "",
                         putChange > 0 ? "text-green-600 dark:text-green-400" : putChange < 0 ? "text-red-600 dark:text-red-400" : ""
                       )}>
                         {putChange !== 0 ? putChange.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
-                        "p-4 align-middle text-center",
+                        "px-4 py-1 align-middle text-center",
                         isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {putOption.volatility ? `${(putOption.volatility * 100).toFixed(2)}%` : "-"}

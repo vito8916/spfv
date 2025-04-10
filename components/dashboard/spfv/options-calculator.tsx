@@ -15,9 +15,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon, LoaderCircle, RefreshCw } from "lucide-react";
+import { CalendarIcon, LoaderCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import TiersList from "./tiers-list";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -38,44 +38,8 @@ import { isMarketOpen } from "@/utils/utils";
 import { OptionsResultsTable } from "./options-results-table";
 import { Skeleton } from "@/components/ui/skeleton";
 import SymbolsListSelect from "./symbols-list-select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { getFilteredSymbolChain } from "@/utils/spfv/getFilteredSymbolChain";
-
-interface SPFVData {
-  spfv: {
-    milliseconds: number;
-    spfv: number;
-    symbol: string;
-    callPutIndicator: string;
-    tte: number;
-    strikeDiff: number;
-    expiration: string;
-    currentUnderlyingPrice: number;
-  };
-}
-interface OptionData {
-  strikePrice: number;
-  bid: number;
-  ask: number;
-  mid: number;
-  volatility: number;
-  prevClose?: number;
-  last?: number;
-  spfv?: number;
-  spfvData?: SPFVData;
-}
-interface ChainOptionData {
-  strikePrice: number;
-  bid: number;
-  ask: number;
-  mid: number;
-  volatility: number;
-  prevClose: number;
-  last: number;
-  spfv?: number;
-  spfvData?: SPFVData;
-  // Add other fields that might come from the API
-}
+import { useOptionsChain } from "@/hooks/useOptionsChain";
+import AutoRefreshMenu from "@/components/dashboard/shared/auto-refresh-menu";
 
 export function OptionsCalculator() {
   const marketIsOpen = useMemo(() => isMarketOpen(), []);
@@ -84,116 +48,41 @@ export function OptionsCalculator() {
   const [expirationDate, setExpirationDate] = useState<Date>();
   const [showTiers, setShowTiers] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [callOptions, setCallOptions] = useState<OptionData[]>([]);
-  const [putOptions, setPutOptions] = useState<OptionData[]>([]);
-  const [underlyingPrice, setUnderlyingPrice] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(false);
-  const [autoRefresh, setAutoRefresh] = useState(true);
-  const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
+  const [refreshInterval, setRefreshInterval] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Reference to store the interval ID
-  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
+  const [wasSubmitted, setWasSubmitted] = useState(false);
+  // Use our custom hook to fetch and manage options chain data
+  const { 
+    callOptions, 
+    putOptions, 
+    underlyingPrice, 
+    isLoading, 
+    isError, 
+    mutate 
+  } = useOptionsChain(symbol, expirationDate, refreshInterval);
 
   // Initialize form with React Hook Form and Zod resolver
   const form = useForm<OptionsCalculatorFormValues>({
     resolver: zodResolver(optionsCalculatorSchema),
   });
 
-  // Fetch data function that can be reused for initial load and refreshes
-  const fetchData = async (symbol: string, expirationDate: Date) => {
-    const isRefresh = isRefreshing;
-    if (!isRefresh) setIsLoading(true);
-
-    try {
-
-      const response = await getFilteredSymbolChain(symbol, expirationDate);
-
-      if (!response) {
-        throw new Error(`API error: ${response.status}`);
-      }
-
-      if (response) {
-
-        // Extract strikes from the response
-        const callStrikes = response.callOptionChain?.strikes || [];
-        const putStrikes = response.putOptionChain?.strikes || [];
-        const underlyingPrice = response.underlyingPrice || 0;
-
-        setUnderlyingPrice(underlyingPrice);
-
-        // Process call options
-        const callOptionsData = callStrikes.map((option: ChainOptionData) => ({
-          strikePrice: option.strikePrice,
-          bid: option.bid,
-          ask: option.ask,
-          mid:
-            option.mid ||
-            (option.bid && option.ask ? (option.bid + option.ask) / 2 : 0),
-          volatility: option.volatility,
-          prevClose: option.prevClose,
-          last: option.last,
-          spfv: option.spfvData?.spfv?.spfv,
-          spfvData: option.spfvData,
-        }));
-
-        // Process put options
-        const putOptionsData = putStrikes.map((option: ChainOptionData) => ({
-          strikePrice: option.strikePrice,
-          bid: option.bid,
-          ask: option.ask,
-          mid:
-            option.mid ||
-            (option.bid && option.ask ? (option.bid + option.ask) / 2 : 0),
-          volatility: option.volatility,
-          prevClose: option.prevClose,
-          last: option.last,
-          spfv: option.spfvData?.spfv?.spfv,
-          spfvData: option.spfvData,
-        }));
-
-        setCallOptions(callOptionsData);
-        setPutOptions(putOptionsData);
-        setShowResults(true);
-        setLastRefreshTime(new Date());
-
-        if (!isRefresh) {
-          toast.success(
-            `Option chain loaded with ${callOptionsData.length} calls and ${putOptionsData.length} puts containing SPFV values`
-          );
-        }
-
-      } else {
-        console.error("Empty response data received");
-        if (!isRefresh) {
-          toast.error("No data received from server");
-        }
-      }
-    } catch (error) {
-      // Show detailed error information
-      let errorMessage = isRefresh
-        ? "Failed to refresh data"
-        : "Failed to load option chain";
-
-      if (error instanceof Error) {
-        console.error(
-          isRefresh ? "Error refreshing data:" : "Error fetching option chain:",
-          error.message
-        );
-        console.error("Stack:", error.stack);
-        errorMessage = `Error: ${error.message}`;
-      } else {
-        console.error("Unknown error type:", error);
-      }
-
-      toast.error(errorMessage, {
-        description:
-          "Please try again or contact support if the problem persists",
-      });
-    } finally {
-      if (!isRefresh) setIsLoading(false);
+  // Update last refresh time when data changes
+  useEffect(() => {
+    if ((callOptions.length > 0 || putOptions.length > 0) && !isLoading) {
+      //setWasSubmitted(false); 
+      setLastRefreshTime(new Date());
+      setShowResults(true);
       setIsRefreshing(false);
     }
+  }, [callOptions, putOptions, isLoading]);
+
+  // Handle manual refresh button click
+  const handleRefresh = async () => {
+    if (!symbol || !expirationDate || isRefreshing) return;
+    setWasSubmitted(false); 
+    setIsRefreshing(true);
+    await mutate();
   };
 
   // Submit handler
@@ -203,49 +92,38 @@ export function OptionsCalculator() {
       return;
     }
 
-    setSymbol(data.symbol);
-    setExpirationDate(data.expirationDate);
-    console.log("SYMBOL:::::::::", data.symbol);
-    console.log("EXPIRATION DATE:::::::::", data.expirationDate);
-    setShowTiers(true);
-    setShowResults(false);
+    // Prevent duplicate submissions
+    if (isLoading) return;
 
-    // Call the fetchData function with the form data directly
-    await fetchData(data.symbol, data.expirationDate);
+    // Only update if values changed
+    const symbolChanged = symbol !== data.symbol;
+    const dateChanged = !expirationDate || expirationDate.getTime() !== data.expirationDate.getTime();
+    
+    if (symbolChanged) {
+      setSymbol(data.symbol);
+    }
+    if (dateChanged) {
+      setExpirationDate(data.expirationDate);
+    }
+    
+    // Only show loading indicators on new searches
+    if (symbolChanged || dateChanged) {
+      setShowTiers(true);
+      setShowResults(false);
+      setWasSubmitted(true);
+      // Initial fetch with no auto-refresh
+      setRefreshInterval(0);
+      
+      // Manually trigger a fetch
+      await mutate();
+      
+      toast.success(
+        `Loading option chain for ${data.symbol} expiring on ${format(data.expirationDate, "PP")}`
+      );
+    }
   }
 
-  // Handle manual refresh button click
-  const handleRefresh = async () => {
-    if (!symbol || !expirationDate) return;
-
-    setIsRefreshing(true);
-    await fetchData(symbol!, expirationDate!);
-  };
-
-  // Set up auto-refresh interval when autoRefresh is enabled
-  useEffect(() => {
-    // Clear any existing interval
-    if (refreshIntervalRef.current) {
-      clearInterval(refreshIntervalRef.current);
-      refreshIntervalRef.current = null;
-    }
-
-    // If auto-refresh is enabled and we have valid data to refresh
-    if (autoRefresh && showResults && symbol && expirationDate) {
-      refreshIntervalRef.current = setInterval(() => {
-        setIsRefreshing(true);
-        fetchData(symbol!, expirationDate!);
-      }, 10000); // 10 seconds
-    }
-
-    // Clean up on unmount
-    return () => {
-      if (refreshIntervalRef.current) {
-        clearInterval(refreshIntervalRef.current);
-      }
-    };
-  }, [autoRefresh, showResults, symbol, expirationDate]);
-
+ 
   return (
     <div className="grid gap-6">
       <Card>
@@ -323,7 +201,7 @@ export function OptionsCalculator() {
                 size="lg"
                 disabled={isLoading || !marketIsOpen}
               >
-                {isLoading ? (
+                {isLoading && !showResults ? (
                   <>
                     <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                     Loading Option Chain...
@@ -354,11 +232,11 @@ export function OptionsCalculator() {
         <TiersList
           symbol={symbol}
           expiration={expirationDate}
-          autoRefresh={autoRefresh}
+          autoRefresh={refreshInterval > 0}
         />
       )}
 
-      {isLoading && !isRefreshing && (
+      {isLoading && !showResults && (
         <div className="space-y-6">
           <h3 className="text-lg font-medium">Loading Option Chain...</h3>
           <div className="grid grid-cols-1 gap-4">
@@ -371,38 +249,26 @@ export function OptionsCalculator() {
         </div>
       )}
 
+      {isError && (
+        <div className="p-4 border-l-4 border-red-500 bg-red-50 dark:bg-red-900/20 rounded">
+          <p className="text-red-700 dark:text-red-400">
+            Error loading option chain. Please try again or select a different symbol/expiration.
+          </p>
+        </div>
+      )}
+
       {showResults && (
         <>
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-bold">Options with SPFV Values</h2>
             <div className="flex items-center gap-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox id="auto-refresh" checked={autoRefresh} onCheckedChange={() => setAutoRefresh(!autoRefresh)} />
-                <label
-                  htmlFor="auto-refresh"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Auto-refresh (10s)
-                </label>
-              </div>
-              
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefresh}
-                disabled={isRefreshing || !symbol || !expirationDate}
-                className="flex items-center gap-2"
-              >
-                <RefreshCw
-                  className={cn("h-4 w-4", isRefreshing && "animate-spin")}
-                />
-                Refresh
-              </Button>
-
+              <AutoRefreshMenu
+                onRefreshIntervalChange={setRefreshInterval}
+                onManualRefresh={handleRefresh}
+              />
               {lastRefreshTime && (
                 <span className="text-xs text-muted-foreground">
-                  Last updated: {format(lastRefreshTime, "HH:mm:ss")}
+                  Last updated: {format(lastRefreshTime, "PPpp")}
                 </span>
               )}
             </div>
@@ -414,6 +280,7 @@ export function OptionsCalculator() {
             symbol={form.getValues("symbol")}
             expiryDate={form.getValues("expirationDate")}
             underlyingPrice={underlyingPrice}
+            wasSubmitted={wasSubmitted}
           />
         </>
       )}
