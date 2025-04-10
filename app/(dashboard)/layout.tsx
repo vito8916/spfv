@@ -3,7 +3,7 @@ import {SidebarInset, SidebarProvider} from "@/components/ui/sidebar";
 import {AppSidebar} from "@/components/dashboard/app-sidebar";
 import {AppSidebarHeader} from "@/components/dashboard/app-sidebar-header";
 import {Suspense} from "react";
-import Loading from './loading';
+import Loading from '../(landing)/loading';
 
 /*
 * Layout for the dashboard
