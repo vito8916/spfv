@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Lock,
   ChevronRight,
+  BarChart3,
 } from "lucide-react";
 import { formatDate } from "@/utils/utils";
 import Link from "next/link";
@@ -23,8 +24,8 @@ import SpfvIconTool from "@/components/shared/spfv-icon-tool";
 function SPFVToolSkeleton() {
   return (
     <div className="flex flex-1 gap-4 p-4 pt-0">
-      <Skeleton className="h-[250px] w-[400px] rounded-xl" />
-      <Skeleton className="h-[250px] w-[400px] rounded-xl" />
+      <Skeleton className="h-[280px] w-[360px] rounded-xl" />
+      <Skeleton className="h-[280px] w-[360px] rounded-xl" />
     </div>
   );
 }
@@ -95,30 +96,47 @@ async function SPFVContent({ user }: { user: User }) {
       )} */}
 
       {/* Tools Grid */}
-      <div className="grid gap-4 md:grid-cols-2 mb-6">
+      <div className="grid gap-6 md:grid-cols-4 mb-6">
+        {/* Calculator Card */}
         <Card
-          className={`relative min-h-[250px] max-w-[400px] justify-between border overflow-hidden shadow hover:shadow-md transition-all duration-300 ${
+          className={`relative min-h-[280px] max-w-[400px] justify-between border overflow-hidden shadow hover:shadow-md transition-all duration-300 ${
             !hasAccess ? "opacity-75 pointer-events-none" : ""
           }`}
         >
-          {/* <div className="absolute h-1 inset-x-0 top-0 bg-primary"></div> */}
-          <CardHeader>
+          <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-[0.15] pointer-events-none"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full pointer-events-none"></div>
+          
+          <CardHeader className="relative z-10">
             <div className="flex items-start justify-between">
               <div>
-                <CardTitle className="text-2xl font-bold text-primary">SP Fair Value Calculator</CardTitle>
+                <div className="flex items-center">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary mr-1.5"></div>
+                  <div className="h-1.5 w-3 rounded-full bg-primary mr-1.5"></div>
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary"></div>
+                </div>
+                <CardTitle className="text-2xl font-bold text-primary mt-2">SP Fair Value Calculator</CardTitle>
                 <CardDescription>
-                Calculates fair value for options based on historical data and relevant underlying conditions
+                  Calculates fair value for options based on historical data and relevant underlying conditions
                 </CardDescription>
               </div>
-              <div className="rounded-full bg-primary/10 p-2">
+              <div className="rounded-full bg-primary/10 p-3 shadow-sm">
+              <div className="text-primary/50">
                 <SpfvIconTool />
+              </div>
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex">
+                <div className="h-2 w-8 rounded-full bg-primary/30 mr-1"></div>
+                <div className="h-2 w-5 rounded-full bg-primary/20 mr-1"></div>
+                <div className="h-2 w-3 rounded-full bg-primary/10"></div>
+              </div>
+            </div>
             <Link href="/spfv/calculator" className="w-full">
-              <button className="flex items-center justify-center w-full text-sm bg-primary/10 text-primary hover:bg-primary/20 px-3 py-2 rounded-md font-medium mt-2">
-                Launch Tool
+              <button className="flex items-center justify-center w-full text-sm bg-primary/10 text-primary hover:bg-primary/20 px-3 py-2 rounded-md font-medium mt-2 transition-colors">
+                Launch SP Fair Value
                 <ChevronRight className="ml-1 h-4 w-4" />
               </button>
             </Link>
@@ -129,29 +147,43 @@ async function SPFVContent({ user }: { user: User }) {
             )}
           </CardContent>
         </Card>
+
+        {/* Screener Card */}
         <Card
-          className={`relative min-h-[250px] max-w-[400px] justify-between border overflow-hidden shadow hover:shadow-md transition-all duration-300 ${
+          className={`relative min-h-[280px] max-w-[400px] justify-between border overflow-hidden shadow hover:shadow-md transition-all duration-300 ${
             !hasAccess ? "opacity-75 pointer-events-none" : ""
           }`}
         >
-          {/* <div className="absolute h-1 inset-x-0 top-0 bg-primary"></div> */}
-          <CardHeader>
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,transparent_0%,transparent_40%,#f0f1f5_40%,#f0f1f5_60%,transparent_60%,transparent_100%)] dark:bg-[linear-gradient(to_right,transparent_0%,transparent_40%,#2a2f3a_40%,#2a2f3a_60%,transparent_60%,transparent_100%)] opacity-[0.15] pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary/5 rounded-tr-full pointer-events-none"></div>
+          
+          <CardHeader className="relative z-10">
             <div className="flex items-start justify-between">
               <div>
-                <CardTitle className="text-2xl font-bold text-primary">SP Stock Screener</CardTitle>
+                <div className="flex items-center">
+                  <div className="h-1.5 w-3 rounded-full bg-primary mr-1.5"></div>
+                  <div className="h-1.5 w-3 rounded-full bg-primary"></div>
+                </div>
+                <CardTitle className="text-2xl font-bold text-primary mt-2">SP Stock Screener</CardTitle>
                 <CardDescription>
-                Find the best SP stocks based on fair value and relevant underlying conditions
+                  Find the best SP stocks based on fair value and relevant underlying conditions
                 </CardDescription>
               </div>
-              <div className="rounded-full bg-primary/10 p-2">
-                <SpfvIconTool />
+              <div className="rounded-full bg-primary/10 p-3 shadow-sm">
+                <BarChart3 className="h-5 w-5 text-primary" />
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="relative z-10">
+            <div className="grid grid-cols-4 gap-1 mb-4">
+              <div className="h-2 w-full rounded-full bg-primary/10"></div>
+              <div className="h-2 w-full rounded-full bg-primary/20"></div>
+              <div className="h-2 w-full rounded-full bg-primary/30"></div>
+              <div className="h-2 w-full rounded-full bg-primary/40"></div>
+            </div>
             <Link href="/spfv/screener" className="w-full">
-              <button className="flex items-center justify-center w-full text-sm bg-primary/10 text-primary hover:bg-primary/20 px-3 py-2 rounded-md font-medium mt-2">
-                Launch Tool
+              <button className="flex items-center justify-center w-full text-sm bg-primary/10 text-primary hover:bg-primary/20 px-3 py-2 rounded-md font-medium mt-2 transition-colors">
+                Launch Screener
                 <ChevronRight className="ml-1 h-4 w-4" />
               </button>
             </Link>
@@ -163,97 +195,6 @@ async function SPFVContent({ user }: { user: User }) {
           </CardContent>
         </Card>
       </div>
-
-      {/* Recent Reports */}
-      {/* <Card
-        className={`border overflow-hidden shadow hover:shadow-md transition-all duration-300 ${
-          !hasAccess ? "opacity-75 pointer-events-none" : ""
-        }`}
-      >
-        <div className="absolute h-1 inset-x-0 top-0 bg-primary"></div>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Recent Reports</CardTitle>
-              <CardDescription>
-                Your previously generated Fair Value reports
-              </CardDescription>
-            </div>
-            {hasAccess && !isUnsubscribed ? (
-              <Badge className="bg-green-500/10 text-green-600 hover:bg-green-500/20 border-green-500/20">
-                <Check className="mr-1 h-3 w-3" /> Active
-              </Badge>
-            ) : hasAccess && isUnsubscribed ? (
-              <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20">
-                <Clock className="mr-1 h-3 w-3" /> Access until{" "}
-                {formatDate(subscription?.current_period_end)}
-              </Badge>
-            ) : isUnsubscribed ? (
-              <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20">
-                <XCircle className="mr-1 h-3 w-3" /> Unsubscribed
-              </Badge>
-            ) : (
-              <Badge
-                variant="outline"
-                className="text-amber-600 border-amber-300"
-              >
-                <AlertCircle className="mr-1 h-3 w-3" /> Subscription Required
-              </Badge>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          {hasAccess ? (
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <div className="bg-primary/10 p-2 rounded-full">
-                  <FileText className="h-4 w-4 text-primary" />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">Sample Report</p>
-                  <p className="text-xs text-muted-foreground">
-                    Example Fair Value analysis report
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date().toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </p>
-                </div>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-center text-sm text-muted-foreground py-4">
-                No more reports to display
-              </div>
-              {isUnsubscribed && (
-                <p className="text-xs text-amber-600 text-center">
-                  Access to reports until{" "}
-                  {formatDate(subscription?.current_period_end)}
-                </p>
-              )}
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-[200px]">
-              <div className="text-center max-w-md px-4">
-                <Lock className="h-8 w-8 mx-auto mb-2 text-amber-500" />
-                <h3 className="text-md font-medium mb-1">
-                  Subscription Required
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {isUnsubscribed
-                    ? "Your subscription has ended. Renew now to regain access to Fair Value reports."
-                    : "Upgrade your account to access Fair Value reports and analytics."}
-                </p>
-                <button className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium">
-                  {isUnsubscribed ? "Renew Now" : "Upgrade Now"}
-                </button>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card> */}
     </>
   );
 }
