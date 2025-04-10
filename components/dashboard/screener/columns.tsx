@@ -7,7 +7,7 @@ import { ArrowDown, ArrowUp, ArrowUpDown, Calendar, DollarSign, Percent, Tag } f
 import { format } from "date-fns";
 
 // This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
+// use a Zod schema here if you want.
 export type Payment = {
   id: string;
   symbol: string;
@@ -34,7 +34,7 @@ export const columns: ColumnDef<Payment>[] = [
       return (
         <Button
           variant="ghost"
-          className="px-2"
+          className="px-2 w-full"
           onClick={() => column.toggleSorting(isSorted === "asc")}
         >
           <div className="flex items-center">
@@ -54,7 +54,7 @@ export const columns: ColumnDef<Payment>[] = [
     cell: ({ row }) => {
       const symbol = row.original.symbol;
       return (
-        <div className="flex items-center">
+        <div className="flex items-center w-full px-3">
           <span className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-xs text-primary mr-2">
             {symbol.charAt(0)}
           </span>
@@ -75,7 +75,7 @@ export const columns: ColumnDef<Payment>[] = [
       return (
         <Button
           variant="ghost"
-          className="px-2"
+          className="px-2 w-full"
           onClick={() => column.toggleSorting(isSorted === "asc")}
         >
           <div className="flex items-center">
@@ -94,12 +94,14 @@ export const columns: ColumnDef<Payment>[] = [
     cell: ({ row }) => {
       const callPutIndicator = row.original.callPutIndicator;
       return (
-        <Badge
-          variant={callPutIndicator === "C" ? "default" : "destructive"}
-          className="font-medium px-2 py-0.5"
+        <div className="flex items-center w-full px-3">
+          <Badge
+            variant={callPutIndicator === "C" ? "default" : "destructive"}
+            className="font-medium px-2 py-0.5"
         >
           {callPutIndicator === "C" ? "Call" : "Put"}
         </Badge>
+        </div>
       );
     },
     filterFn: (row, id, value) => {
@@ -113,7 +115,7 @@ export const columns: ColumnDef<Payment>[] = [
       return (
         <Button
           variant="ghost"
-          className="px-2"
+          className="px-2 w-full"
           onClick={() => column.toggleSorting(isSorted === "asc")}
         >
           <div className="flex items-center">
@@ -142,7 +144,7 @@ export const columns: ColumnDef<Payment>[] = [
       return (
         <Button
           variant="ghost"
-          className="px-2"
+          className="px-2 w-full"
           onClick={() => column.toggleSorting(isSorted === "asc")}
         >
           <div className="flex items-center">
@@ -164,9 +166,9 @@ export const columns: ColumnDef<Payment>[] = [
       const dateString = row.original.expiration || row.original.createdAt;
       try {
         const date = new Date(dateString);
-        return <div className="px-3">{format(date, "MMM d, yyyy")}</div>;
+        return <div className="text-center px-3">{format(date, "MMM d, yyyy")}</div>;
       } catch {
-        return <div className="px-3">{dateString}</div>;
+        return <div className="text-center px-3">{dateString}</div>;
       }
     },
   },
@@ -177,7 +179,7 @@ export const columns: ColumnDef<Payment>[] = [
       return (
         <Button
           variant="ghost"
-          className="px-2"
+          className="px-2 w-full"
           onClick={() => column.toggleSorting(isSorted === "asc")}
         >
           <div className="flex items-center whitespace-nowrap">
@@ -195,7 +197,7 @@ export const columns: ColumnDef<Payment>[] = [
     },
     cell: ({ row }) => {
       const tte = row.original.tte;
-      return <div className="text-right font-medium">{Math.round(tte)}</div>;
+      return <div className="text-center font-medium px-3">{Math.round(tte)}</div>;
     },
   },
   {
@@ -205,7 +207,7 @@ export const columns: ColumnDef<Payment>[] = [
       return (
         <Button
           variant="ghost"
-          className="px-2"
+          className="px-2 w-full"
           onClick={() => column.toggleSorting(isSorted === "asc")}
         >
           <div className="flex items-center whitespace-nowrap">
@@ -225,14 +227,14 @@ export const columns: ColumnDef<Payment>[] = [
     cell: ({ row }) => {
       const price = row.original.currentUnderlyingPrice;
       if (!price) return null;
-      return <div className="text-right font-medium">${price.toFixed(3)}</div>;
+      return <div className="text-right font-medium px-3">${price.toFixed(3)}</div>;
     },
   },
   {
     id: "bidAsk",
     header: () => {
       return (
-        <Button variant="ghost" className="px-2">
+        <Button variant="ghost" className="px-2 w-full">
           <div className="flex items-center whitespace-nowrap">
             <span>Bid/Ask</span>
           </div>
@@ -244,7 +246,7 @@ export const columns: ColumnDef<Payment>[] = [
       const ask = row.original.optionAsk;
       if (!bid || !ask) return null;
       return (
-        <div className="text-right font-medium">
+        <div className="text-right font-medium px-3">
           ${bid.toFixed(3)} / ${ask.toFixed(3)}
         </div>
       );
@@ -257,7 +259,7 @@ export const columns: ColumnDef<Payment>[] = [
       return (
         <Button
           variant="ghost"
-          className="px-2"
+          className="px-2 w-full"
           onClick={() => column.toggleSorting(isSorted === "asc")}
         >
           <div className="flex items-center">
@@ -277,7 +279,7 @@ export const columns: ColumnDef<Payment>[] = [
     cell: ({ row }) => {
       const spfv = row.original.spfv;
       return (
-        <div className="text-right font-medium text-primary">
+        <div className="text-right font-medium text-primary px-3">
           ${spfv.toFixed(3)}
         </div>
       );
@@ -290,7 +292,7 @@ export const columns: ColumnDef<Payment>[] = [
       return (
         <Button
           variant="ghost"
-          className="px-2"
+          className="px-2 w-full"
           onClick={() => column.toggleSorting(isSorted === "asc")}
         >
           <div className="flex items-center whitespace-nowrap">
@@ -312,7 +314,7 @@ export const columns: ColumnDef<Payment>[] = [
       const isPositive = spfvDistanceDollar >= 0;
       return (
         <div
-          className={`text-right font-medium ${
+          className={`text-right font-medium px-3 ${
             isPositive ? "text-green-600" : "text-red-600"
           }`}
         >
@@ -328,7 +330,7 @@ export const columns: ColumnDef<Payment>[] = [
       return (
         <Button
           variant="ghost"
-          className="px-2"
+          className="px-2 w-full"
           onClick={() => column.toggleSorting(isSorted === "asc")}
         >
           <div className="flex items-center whitespace-nowrap">
@@ -351,7 +353,7 @@ export const columns: ColumnDef<Payment>[] = [
       const percentValue = spfvDistancePercent * 100;
       return (
         <div
-          className={`text-right font-medium ${
+          className={`text-right font-medium px-3 ${
             isPositive ? "text-green-600" : "text-red-600"
           }`}
         >

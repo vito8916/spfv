@@ -34,7 +34,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Download, Search, SlidersHorizontal } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
 import {
   Select,
   SelectContent,
@@ -42,7 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-
+import ScreenerSkeleton from "@/components/skeletons/screener-skeleton"
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
@@ -182,21 +181,14 @@ export function ScreenerDataTable<TData, TValue>({
       </CardHeader>
       <CardContent className="p-0">
         {isLoading ? (
-          <div className="p-4 space-y-4">
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-          </div>
+          <ScreenerSkeleton />
         ) : (
           <>
             <ScrollArea className="h-[calc(100vh-26rem)] rounded-md">
               <Table>
                 <TableHeader>
                   {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id} className="sticky top-0 bg-card z-10 hover:bg-card">
+                    <TableRow key={headerGroup.id} className="sticky top-0 bg-card z-5 hover:bg-card">
                       {headerGroup.headers.map((header) => {
                         return (
                           <TableHead key={header.id}>

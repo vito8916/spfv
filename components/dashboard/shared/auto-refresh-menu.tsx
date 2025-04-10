@@ -15,7 +15,12 @@ import { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-export default function AutoRefreshMenu() {
+interface AutoRefreshMenuProps {
+  onRefreshIntervalChange: (interval: number) => void;
+  onManualRefresh: () => void;
+}
+
+export default function AutoRefreshMenu({ onRefreshIntervalChange, onManualRefresh }: AutoRefreshMenuProps) {
   const [refreshRate, setRefreshRate] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [countdown, setCountdown] = useState(0);
@@ -24,9 +29,11 @@ export default function AutoRefreshMenu() {
   useEffect(() => {
     if (refreshRate <= 0) {
       setCountdown(0);
+      onRefreshIntervalChange(0);
       return;
     }
 
+    onRefreshIntervalChange(refreshRate);
     setCountdown(refreshRate);
     const timer = setInterval(() => {
       setCountdown((prev) => {
@@ -39,20 +46,17 @@ export default function AutoRefreshMenu() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [refreshRate]);
+  }, [refreshRate, onRefreshIntervalChange]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    // Simulate refresh - replace with actual refresh logic
+    onManualRefresh();
     setTimeout(() => {
       setIsRefreshing(false);
     }, 1000);
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      
-      
       <div className="flex items-center gap-2">
         <DropdownMenu>
           <Tooltip>
@@ -119,6 +123,5 @@ export default function AutoRefreshMenu() {
           </TooltipContent>
         </Tooltip>
       </div>
-    </div>
   );
 }

@@ -1,39 +1,22 @@
+"use client";
+
 import AutoRefreshMenu from "@/components/dashboard/shared/auto-refresh-menu";
 import { ScreenerDataTable } from "@/components/dashboard/screener/data-table";
 import { columns } from "@/components/dashboard/screener/columns";
-import { getSpfvTop } from "@/utils/spfv/getSpfvTop";
-import { Suspense } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Suspense, useState } from "react";
+import ScreenerSkeleton from "@/components/skeletons/screener-skeleton";
+import { useSpfvTop } from "@/hooks/useSpfvTop";
+import ToggleType from "@/components/dashboard/screener/toggle-type";
 
-export const revalidate = 5;
+export default function StockScreener() {
+  const [refreshInterval, setRefreshInterval] = useState(0);
+  const [selectedType, setSelectedType] = useState("dollar");
+  const { data, isLoading, isError, mutate } = useSpfvTop(selectedType, refreshInterval);
 
-function ScreenerSkeleton() {
-  return (
-    <Card>
-      <CardContent className="p-6 space-y-4">
-        <div className="flex justify-between">
-          <Skeleton className="h-8 w-[200px]" />
-          <Skeleton className="h-8 w-[100px]" />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-full" />
-          <Skeleton className="h-8 w-full" />
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+  const handleManualRefresh = () => {
+    mutate(); // Manually trigger a revalidation of the data
+  };
 
-export default async function StockScreener() {
   return (
     <div className="space-y-6 p-6">
       <div className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center pb-2 border-b">
@@ -43,18 +26,23 @@ export default async function StockScreener() {
             Find and analyze options with potential based on SPFV metrics.
           </p>
         </div>
-        <AutoRefreshMenu />
+        <div className="flex items-center gap-2">
+          <ToggleType selectedValue={selectedType} onValueChange={setSelectedType} />
+          <AutoRefreshMenu
+            onRefreshIntervalChange={setRefreshInterval}
+            onManualRefresh={handleManualRefresh}
+          />
+        </div>
       </div>
-      
+
+      {isError && <div className="text-red-500">Error loading data</div>}
       <Suspense fallback={<ScreenerSkeleton />}>
-        <ScreenerContent />
+        <ScreenerDataTable
+          columns={columns}
+          data={data}
+          isLoading={isLoading}
+        />
       </Suspense>
     </div>
   );
-}
-
-async function ScreenerContent() {
-  const data = await getSpfvTop();
-  
-  return <ScreenerDataTable columns={columns} data={data} />;
 }
