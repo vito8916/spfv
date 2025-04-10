@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+//import { createClient } from "@/utils/supabase/server";
 
 const SPFV_TOP_API_URL = `${process.env.SPFV_API_URL}/spfv-top`;
 
