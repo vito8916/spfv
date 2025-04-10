@@ -88,14 +88,14 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
       
       if (tableRows.length > 0 && tableRows[closestIndex]) {
         // Calculate the scroll position to center the target row
-        const targetRow = tableRows[closestIndex] as HTMLElement;
-        const container = tableContainerRef.current;
-        const containerHeight = container.clientHeight;
-        const targetOffset = targetRow.offsetTop;
+        //const targetRow = tableRows[closestIndex] as HTMLElement;
+        //const container = tableContainerRef.current;
+        //const containerHeight = container.clientHeight;
+        //const targetOffset = targetRow.offsetTop;
         
         // Set the scroll position to center the target row
         // Subtract half the container height to center it
-        container.scrollTop = targetOffset - (containerHeight / 2) + (targetRow.clientHeight / 2);
+        //container.scrollTop = targetOffset - (containerHeight / 2) + (targetRow.clientHeight / 2);
       }
     }
   }, [sortedStrikes, underlyingPrice, callOptions, putOptions]);
