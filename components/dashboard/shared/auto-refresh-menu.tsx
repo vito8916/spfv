@@ -12,9 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Settings, RefreshCcw, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-
+import { Badge } from "@/components/ui/badge";
 interface AutoRefreshMenuProps {
   onRefreshIntervalChange: (interval: number) => void;
   onManualRefresh: () => void;
@@ -23,29 +22,14 @@ interface AutoRefreshMenuProps {
 export default function AutoRefreshMenu({ onRefreshIntervalChange, onManualRefresh }: AutoRefreshMenuProps) {
   const [refreshRate, setRefreshRate] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [countdown, setCountdown] = useState(0);
 
-  // Handle auto-refresh countdown
+  // Handle auto-refres
   useEffect(() => {
     if (refreshRate <= 0) {
-      setCountdown(0);
       onRefreshIntervalChange(0);
       return;
     }
-
-    onRefreshIntervalChange(refreshRate);
-    setCountdown(refreshRate);
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          handleRefresh();
-          return refreshRate;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
+    onRefreshIntervalChange(refreshRate * 1000);
   }, [refreshRate, onRefreshIntervalChange]);
 
   const handleRefresh = () => {
@@ -53,7 +37,7 @@ export default function AutoRefreshMenu({ onRefreshIntervalChange, onManualRefre
     onManualRefresh();
     setTimeout(() => {
       setIsRefreshing(false);
-    }, 1000);
+    }, 1500);
   };
 
   return (
@@ -67,7 +51,7 @@ export default function AutoRefreshMenu({ onRefreshIntervalChange, onManualRefre
                   <span>Refresh</span>
                   {refreshRate > 0 && (
                     <Badge variant="outline" className="ml-1 w-10 h-5 px-2 text-primary">
-                      {countdown}s
+                      {refreshRate}s
                     </Badge>
                   )}
                 </Button>
