@@ -10,7 +10,7 @@ export function useSpfvTop(type: string, intervalTime = 0) {
     {
       refreshInterval: intervalTime,
       revalidateOnFocus: true,
-      dedupingInterval: 5000,
+      //dedupingInterval: 5000,
     }
   );
 
