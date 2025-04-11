@@ -1,17 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { TierCard } from "./tier-card";
-import { getTiers } from "@/utils/spfv/getTiers";
 import { format } from "date-fns";
 import { AlertCircle } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-
-interface TiersListProps {
-  symbol?: string;
-  expiration?: Date;
-  autoRefresh?: boolean;
-}
 
 interface TierOption {
   strike: number;
@@ -27,128 +19,14 @@ interface TierData {
   putOption: TierOption | null;
 }
 
-// La estructura de la respuesta API es un objeto con keys tier1, tier2, etc.
-interface TiersResponse {
-  [key: string]: TierData;
+interface TiersListProps {
+  tiers: TierData[] | null;
+  symbol: string | undefined;
+  expiration: Date | undefined;
 }
 
-export default function TiersList({ symbol, expiration, autoRefresh = false }: TiersListProps) {
-  const [tiers, setTiers] = useState<TierData[] | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-
-  useEffect(() => {
-    const fetchTiers = async () => {
-      if (!symbol || !expiration) {
-        setError("Symbol and expiration date are required");
-        return;
-      }
-
-      // Format as YYYYMMDD, which is the correct format for the updown API
-      const formattedDate = format(expiration, "yyyyMMdd");
-
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getTiers(symbol, formattedDate);
-        console.log("DATA:::::::::", data);
-
-        if (!data) {
-          setError("No tier data available for this selection");
-          setTiers(null);
-          return;
-        }
-
-        // Convertir la respuesta de objeto a array para poder iterarla
-        const tiersData = Object.values(data as TiersResponse);
-
-        if (tiersData.length === 0) {
-          setError("No tier data available for this selection");
-          setTiers(null);
-        } else {
-          console.log("Processed tiers data:", tiersData);
-          setTiers(tiersData);
-        }
-      } catch (err) {
-        console.error("Error fetching tiers:", err);
-        setError("Failed to load tier data. Please try again.");
-        setTiers(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Referencia para el intervalo
-    let intervalRef: NodeJS.Timeout | null = null;
-    
-    // Función para obtener datos
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        await fetchTiers();
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    // Carga inicial de datos
-    fetchData();
-    
-    // Configurar auto-refresco si está habilitado
-    if (autoRefresh && symbol && expiration) {
-      intervalRef = setInterval(() => {
-        setIsRefreshing(true);
-        fetchTiers();
-      }, 10000); // refresca cada 10 segundos
-    }
-    
-    // Limpieza al desmontar o cambiar dependencias
-    return () => {
-      if (intervalRef) {
-        console.log("Cleaning up tiers auto-refresh interval");
-        clearInterval(intervalRef);
-      }
-    };
-  }, [symbol, expiration, autoRefresh]); // dependencias que resetean el intervalo
-
-  if (loading && !isRefreshing) {
-    return (
-      <div className="space-y-6">
-        <h3 className="text-lg font-medium">Loading Strategy Tiers...</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="border rounded-lg p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-6 w-12" />
-              </div>
-              <div className="space-y-2">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="rounded-md p-4 border border-red-200 bg-red-50 text-red-800">
-        <div className="flex items-center gap-2">
-          <AlertCircle className="h-4 w-4" />
-          <h5 className="font-medium">Error</h5>
-        </div>
-        <p className="mt-2 text-sm">{error}</p>
-      </div>
-    );
-  }
-
+export default function TiersList({ tiers, symbol, expiration }: TiersListProps) {
+  // Display empty state
   if (!tiers || tiers.length === 0) {
     return (
       <div className="rounded-md p-4 border border-yellow-200 bg-yellow-50 text-yellow-800">
@@ -163,15 +41,11 @@ export default function TiersList({ symbol, expiration, autoRefresh = false }: T
     );
   }
 
-  // Filtrar tiers inválidos (donde callOption o putOption son null)
+  // Filter out tiers with null callOption or putOption
   const validTiers = tiers.filter(
-    (tier) =>
-      tier.callOption !== null &&
-      tier.putOption !== null &&
-      tier.higherComponent !== "Error/Unavailable"
+    tier => tier.callOption !== null && tier.putOption !== null
   );
 
-  // Si no hay tiers válidos después de filtrar
   if (validTiers.length === 0) {
     return (
       <div className="rounded-md p-4 border border-yellow-200 bg-yellow-50 text-yellow-800">
@@ -186,9 +60,7 @@ export default function TiersList({ symbol, expiration, autoRefresh = false }: T
     );
   }
 
-  // Ordenar tiers por ratio (de mayor a menor)
-  const sortedTiers = [...validTiers].sort((a, b) => a.ratio - b.ratio);
-
+  // Display data
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-medium">
@@ -196,20 +68,18 @@ export default function TiersList({ symbol, expiration, autoRefresh = false }: T
         {expiration ? format(expiration, "PP") : ""}
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sortedTiers.map((tier, index) => {
-          return (
-            <TierCard
-              key={index}
-              tier={index}
-              ratio={tier.ratio}
-              callStrike={tier.callOption!.strike}
-              callMidpoint={tier.callOption!.midpoint}
-              putStrike={tier.putOption!.strike}
-              putMidpoint={tier.putOption!.midpoint}
-            />
-          );
-        })}
+        {validTiers.map((tier, index) => (
+          <TierCard
+            key={index}
+            tier={index + 1}
+            ratio={tier.ratio}
+            callStrike={tier.callOption?.strike ?? 0}
+            callMidpoint={tier.callOption?.midpoint ?? 0}
+            putStrike={tier.putOption?.strike ?? 0}
+            putMidpoint={tier.putOption?.midpoint ?? 0}
+          />
+        ))}
       </div>
-    </div>
+    </div> 
   );
 }
