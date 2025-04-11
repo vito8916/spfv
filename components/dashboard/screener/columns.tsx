@@ -172,34 +172,7 @@ export const columns: ColumnDef<Payment>[] = [
       }
     },
   },
-  {
-    accessorKey: "tte",
-    header: ({ column }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <Button
-          variant="ghost"
-          className="px-2 w-full"
-          onClick={() => column.toggleSorting(isSorted === "asc")}
-        >
-          <div className="flex items-center whitespace-nowrap">
-            <span>Days to Exp</span>
-            {isSorted === "asc" ? (
-              <ArrowUp className="ml-2 h-4 w-4" />
-            ) : isSorted === "desc" ? (
-              <ArrowDown className="ml-2 h-4 w-4" />
-            ) : (
-              <ArrowUpDown className="ml-2 h-4 w-4 opacity-30" />
-            )}
-          </div>
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      const tte = row.original.tte;
-      return <div className="text-center font-medium px-3">{Math.round(tte)}</div>;
-    },
-  },
+  
   {
     accessorKey: "currentUnderlyingPrice",
     header: ({ column }) => {
