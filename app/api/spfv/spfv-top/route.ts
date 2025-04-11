@@ -1,3 +1,4 @@
+import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 //import { createClient } from "@/utils/supabase/server";
 
@@ -6,7 +7,6 @@ const SPFV_TOP_API_URL = `${process.env.SPFV_API_URL}/spfv-top`;
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    console.log("searchParams", searchParams);
     const type = searchParams.get("type");
 
     if (!type) {
@@ -18,19 +18,25 @@ export async function GET(request: NextRequest) {
     }
 
     // Authentication check
-    /* const supabase = await createClient();
+    const supabase = await createClient();
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
-    console.log(user);
     console.log(authError);
 
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    } */
+    }
 
-    const response = await fetch(`${SPFV_TOP_API_URL}?type=${type}`);
+    const response = await fetch(`${SPFV_TOP_API_URL}?type=${type}`, {
+      cache: "no-store",
+      headers: {
+        "Cache-Control":
+          "no-store, no-cache, must-revalidate, proxy-revalidate",
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) {
       console.error("Failed to fetch SPFV top", await response.text());

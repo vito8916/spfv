@@ -82,6 +82,7 @@ export function OptionsCalculator() {
       setLastRefreshTime(new Date());
       setShowResults(true);
       setIsRefreshing(false);
+      setWasSubmitted(false);
     }
   }, [callOptions, putOptions, isLoading]);
 

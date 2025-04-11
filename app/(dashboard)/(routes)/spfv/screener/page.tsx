@@ -13,6 +13,13 @@ export default function StockScreener() {
   const [selectedType, setSelectedType] = useState("dollar");
   const { data, isLoading, isError, mutate } = useSpfvTop(selectedType, refreshInterval);
 
+  console.log("refreshInterval", refreshInterval);
+  console.log("selectedType", selectedType);
+  console.log("data", data);
+  console.log("isLoading", isLoading);
+  console.log("isError", isError);
+
+
   const handleManualRefresh = () => {
     mutate(); // Manually trigger a revalidation of the data
   };
