@@ -242,7 +242,7 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                         {callOption.last ? callOption.last.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
-                        "px-4 py-1 align-middle text-center font-medium",
+                        "px-4 py-1 align-middle text-center font-bold",
                         isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : "",
                         callSPFV ? "text-blue-600 bg-blue-50/50 dark:text-blue-300 dark:bg-blue-900/40" : ""
                       )}>
@@ -265,7 +265,7 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                       
                       {/* Put side */}
                       <td className={cn(
-                        "px-4 py-1 align-middle text-center font-medium",
+                        "px-4 py-1 align-middle text-center font-bold",
                         isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : "",
                         putSPFV ? "text-blue-600 bg-blue-50/50 dark:text-blue-300 dark:bg-blue-900/40" : ""
                       )}>
