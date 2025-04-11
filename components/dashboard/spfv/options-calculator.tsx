@@ -18,7 +18,6 @@ import { format } from "date-fns";
 import { CalendarIcon, LoaderCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useMemo, useState } from "react";
-import TiersList from "./tiers-list";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import {
@@ -35,18 +34,20 @@ import {
 } from "@/lib/validations/options-calculator";
 import { toast } from "sonner";
 import { isMarketOpen } from "@/utils/utils";
-import { OptionsResultsTable } from "./options-results-table";
-import { Skeleton } from "@/components/ui/skeleton";
 import SymbolsListSelect from "./symbols-list-select";
 import { useOptionsChain } from "@/hooks/useOptionsChain";
-import AutoRefreshMenu from "@/components/dashboard/shared/auto-refresh-menu";
+import { useTiers } from "@/hooks/useTiers";
+import {
+  MarketClosedMessage,
+  TiersSection,
+  ResultsSection
+} from "./calculator";
 
 export function OptionsCalculator() {
   const marketIsOpen = useMemo(() => isMarketOpen(), []);
 
   const [symbol, setSymbol] = useState<string>();
   const [expirationDate, setExpirationDate] = useState<Date>();
-  const [showTiers, setShowTiers] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -62,6 +63,14 @@ export function OptionsCalculator() {
     mutate 
   } = useOptionsChain(symbol, expirationDate, refreshInterval);
 
+  // Use our custom hook to fetch and manage tiers data
+  const { 
+    tiers, 
+    isLoading: tiersLoading, 
+    isError: tiersError, 
+    mutate: mutateTiers 
+  } = useTiers(symbol, expirationDate, refreshInterval);
+
   // Initialize form with React Hook Form and Zod resolver
   const form = useForm<OptionsCalculatorFormValues>({
     resolver: zodResolver(optionsCalculatorSchema),
@@ -70,7 +79,6 @@ export function OptionsCalculator() {
   // Update last refresh time when data changes
   useEffect(() => {
     if ((callOptions.length > 0 || putOptions.length > 0) && !isLoading) {
-      //setWasSubmitted(false); 
       setLastRefreshTime(new Date());
       setShowResults(true);
       setIsRefreshing(false);
@@ -83,6 +91,7 @@ export function OptionsCalculator() {
     setWasSubmitted(false); 
     setIsRefreshing(true);
     await mutate();
+    await mutateTiers();
   };
 
   // Submit handler
@@ -108,7 +117,7 @@ export function OptionsCalculator() {
     
     // Only show loading indicators on new searches
     if (symbolChanged || dateChanged) {
-      setShowTiers(true);
+     
       setShowResults(false);
       setWasSubmitted(true);
       // Initial fetch with no auto-refresh
@@ -116,7 +125,7 @@ export function OptionsCalculator() {
       
       // Manually trigger a fetch
       await mutate();
-      
+      await mutateTiers();
       toast.success(
         `Loading option chain for ${data.symbol} expiring on ${format(data.expirationDate, "PP")}`
       );
@@ -217,73 +226,31 @@ export function OptionsCalculator() {
         </CardContent>
       </Card>
 
-      {/* if the market is not open, show a message */}
-      {!marketIsOpen && (
-        <div className="flex justify-center items-center text-center">
-          <p className="text-muted-foreground text-sm">
-            The market is currently closed. It opens at 9:30 AM ET, Monday to
-            Friday.
-          </p>
-        </div>
-      )}
-
-      {/* Use the TierSection component */}
-      {showTiers && (
-        <TiersList
-          symbol={symbol}
-          expiration={expirationDate}
-          autoRefresh={refreshInterval > 0}
-        />
-      )}
-
-      {isLoading && !showResults && (
-        <div className="space-y-6">
-          <h3 className="text-lg font-medium">Loading Option Chain...</h3>
-          <div className="grid grid-cols-1 gap-4">
-            <div className="border rounded-lg p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-10 w-full" />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isError && (
-        <div className="p-4 border-l-4 border-red-500 bg-red-50 dark:bg-red-900/20 rounded">
-          <p className="text-red-700 dark:text-red-400">
-            Error loading option chain. Please try again or select a different symbol/expiration.
-          </p>
-        </div>
-      )}
-
-      {showResults && (
-        <>
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-bold">Options with SPFV Values</h2>
-            <div className="flex items-center gap-4">
-              <AutoRefreshMenu
-                onRefreshIntervalChange={setRefreshInterval}
-                onManualRefresh={handleRefresh}
-              />
-              {lastRefreshTime && (
-                <span className="text-xs text-muted-foreground">
-                  Last updated: {format(lastRefreshTime, "PPpp")}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <OptionsResultsTable
-            callOptions={callOptions}
-            putOptions={putOptions}
-            symbol={form.getValues("symbol")}
-            expiryDate={form.getValues("expirationDate")}
-            underlyingPrice={underlyingPrice}
-            wasSubmitted={wasSubmitted}
-          />
-        </>
-      )}
+      {!marketIsOpen && <MarketClosedMessage />}
+      
+      <TiersSection 
+        tiers={tiers}
+        tiersLoading={tiersLoading}
+        tiersError={tiersError}
+        symbol={symbol}
+        expirationDate={expirationDate}
+      />
+      
+      
+      <ResultsSection 
+        showResults={showResults}
+        error={isError}
+        isLoading={isLoading}
+        lastRefreshTime={lastRefreshTime}
+        setRefreshInterval={setRefreshInterval}
+        handleRefresh={handleRefresh}
+        callOptions={callOptions}
+        putOptions={putOptions}
+        symbol={form.getValues("symbol")}
+        expiryDate={form.getValues("expirationDate")}
+        underlyingPrice={underlyingPrice}
+        wasSubmitted={wasSubmitted}
+      />
     </div>
   );
 }
