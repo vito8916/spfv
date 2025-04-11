@@ -33,7 +33,7 @@ export function TierCard({ tier, ratio, callStrike, callMidpoint, putStrike, put
       <CardHeader>
         <CardTitle className="flex items-center justify-between gap-2 text-base">
             <div className="flex items-center gap-2">
-              {tier === 0 ? "+/- 5 Ratio" : tier === 1 ? "+/- 10 Ratio" : "+/- 15 Ratio"}
+              {tier === 1 ? "+/- 5 Ratio" : tier === 2 ? "+/- 10 Ratio" : "+/- 15 Ratio"}
               {isGoodRatio && (
                 <ChevronUp className="h-4 w-4 text-green-500" />
               )}
