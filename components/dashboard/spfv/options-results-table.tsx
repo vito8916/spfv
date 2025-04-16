@@ -118,9 +118,19 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
             </CardTitle>
             <CardDescription className="font-bold">
               {expiryDate ? `Expiring ${format(expiryDate, "MMMM d, yyyy")}` : ""}
-              {lastPriceInfo ? ` • Stock Price: $${lastPriceInfo.underlyingPrice.toFixed(2)}` : ""}
-              {lastPriceInfo ? ` • Stock Price Change: $${lastPriceInfo.lastTradeAmountChange.toFixed(2)}` : ""}
-              {lastPriceInfo ? ` • Stock Price Percent Change: $${lastPriceInfo.lastTradePercentChange.toFixed(2)}` : ""}
+              { lastPriceInfo ? ` • Stock Price: $${lastPriceInfo.underlyingPrice.toFixed(2)} • ` : ""}
+              {
+                lastPriceInfo ? <span className={cn(
+                  "text-green-600 dark:text-green-400",
+                  lastPriceInfo.lastTradeAmountChange > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                )}>${lastPriceInfo.lastTradeAmountChange.toFixed(2)} </span> : ""
+              }
+              {
+                lastPriceInfo ? <span className={cn(
+                  "text-green-600 dark:text-green-400",
+                  lastPriceInfo.lastTradePercentChange > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                )}>({lastPriceInfo.lastTradePercentChange.toFixed(2)}%)</span> : ""
+              }
             </CardDescription>
           </div>
           <div className="flex flex-col md:flex-row gap-2">
