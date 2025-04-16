@@ -6,7 +6,7 @@ export const optionsCalculatorSchema = z.object({
   }),
   expirationDate: z.date({
     required_error: "Please select an expiration date",
-  }),
+  })
 })
 
 export type OptionsCalculatorFormValues = z.infer<typeof optionsCalculatorSchema> 
