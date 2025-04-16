@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { format } from 'date-fns';
 // API endpoint to fetch options data (calls/puts)
 const API_URL = `${process.env.SPFV_API_URL}/symbol-chain`;
 
