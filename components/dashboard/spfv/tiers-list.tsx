@@ -23,11 +23,12 @@ interface TiersListProps {
   tiers: TierData[] | null;
   symbol: string | undefined;
   expiration: Date | undefined;
+  tiersError: boolean;
 }
 
-export default function TiersList({ tiers, symbol, expiration }: TiersListProps) {
+export default function TiersList({ tiers, symbol, expiration, tiersError }: TiersListProps) {
   // Display empty state
-  if (!tiers || tiers.length === 0) {
+  if (!tiers || tiers.length === 0 || tiersError) {
     return (
       <div className="rounded-md p-4 border border-yellow-200 bg-yellow-50 text-yellow-800">
         <div className="flex items-center gap-2">

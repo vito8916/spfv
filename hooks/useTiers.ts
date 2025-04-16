@@ -15,7 +15,14 @@ interface TierData {
   putOption: TierOption | null;
 }
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+const fetcher = async (url: string) => {
+  const res = await fetch(url)
+  if (!res.ok) {
+    const error = new Error('An error occurred while fetching the data.')
+    throw error
+  }
+  return res.json()
+}
 
 export function useTiers(symbol?: string, expiration?: Date, refreshInterval = 0) {
   const formattedDate = expiration ? format(expiration, 'yyyyMMdd') : null;
@@ -32,6 +39,8 @@ export function useTiers(symbol?: string, expiration?: Date, refreshInterval = 0
     }
   );
   
+
+  console.log("error::::::::::::::::::::::", error);
   // Process tiers data if available
   let tiers: TierData[] | null = null;
   if (data) {
