@@ -33,7 +33,7 @@ import {
   optionsCalculatorSchema,
 } from "@/lib/validations/options-calculator";
 import { toast } from "sonner";
-import { isMarketOpen } from "@/utils/utils";
+import { bankHoliday, isMarketOpen } from "@/utils/utils";
 import SymbolsListSelect from "./symbols-list-select";
 import { useOptionsChain } from "@/hooks/useOptionsChain";
 import { useTiers } from "@/hooks/useTiers";
@@ -42,6 +42,7 @@ import {
   TiersSection,
   ResultsSection
 } from "./calculator";
+
 
 export function OptionsCalculator() {
   const marketIsOpen = useMemo(() => isMarketOpen(), []);
@@ -52,14 +53,16 @@ export function OptionsCalculator() {
   const [refreshInterval, setRefreshInterval] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
-  const [wasSubmitted, setWasSubmitted] = useState(false);
+  // New state specifically for controlling table scrolling
+  const [shouldScrollTable, setShouldScrollTable] = useState(false);
+
   // Use our custom hook to fetch and manage options chain data
   const { 
     callOptions, 
     putOptions, 
     underlyingPrice, 
     isLoading, 
-    isError, 
+    error, 
     mutate 
   } = useOptionsChain(symbol, expirationDate, refreshInterval);
 
@@ -67,7 +70,7 @@ export function OptionsCalculator() {
   const { 
     tiers, 
     isLoading: tiersLoading, 
-    isError: tiersError, 
+    error: tiersError, 
     mutate: mutateTiers 
   } = useTiers(symbol, expirationDate, refreshInterval);
 
@@ -76,20 +79,33 @@ export function OptionsCalculator() {
     resolver: zodResolver(optionsCalculatorSchema),
   });
 
+
   // Update last refresh time when data changes
   useEffect(() => {
     if ((callOptions.length > 0 || putOptions.length > 0) && !isLoading) {
       setLastRefreshTime(new Date());
       setShowResults(true);
       setIsRefreshing(false);
-      setWasSubmitted(false);
+      // Don't reset shouldScrollTable here so it stays true after form submission
     }
   }, [callOptions, putOptions, isLoading]);
+
+  // Reset shouldScrollTable after scrolling has been applied and data has loaded
+  useEffect(() => {
+    if (shouldScrollTable && !isLoading && callOptions.length > 0 && putOptions.length > 0) {
+      // Set a short timeout to ensure scrolling has been applied before resetting
+      const timer = setTimeout(() => {
+        setShouldScrollTable(false);
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [shouldScrollTable, isLoading, callOptions.length, putOptions.length]);
 
   // Handle manual refresh button click
   const handleRefresh = async () => {
     if (!symbol || !expirationDate || isRefreshing) return;
-    setWasSubmitted(false); 
+    setShouldScrollTable(false); // Don't scroll on manual refresh
     setIsRefreshing(true);
     await mutate();
     await mutateTiers();
@@ -120,16 +136,17 @@ export function OptionsCalculator() {
     if (symbolChanged || dateChanged) {
      
       setShowResults(false);
-      setWasSubmitted(true);
+      
       // Initial fetch with no auto-refresh
       setRefreshInterval(0);
-      
+      setShouldScrollTable(true); // Enable scrolling on form submission
       // Manually trigger a fetch
       await mutate();
       await mutateTiers();
       toast.success(
         `Loading option chain for ${data.symbol} expiring on ${format(data.expirationDate, "PP")}`
       );
+      
     }
   }
 
@@ -146,7 +163,7 @@ export function OptionsCalculator() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-center">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-end">
                 {/* Symbol */}
                 <FormField
                   control={form.control}
@@ -154,7 +171,17 @@ export function OptionsCalculator() {
                   render={({ field }) => (
                     <FormItem className="lg:col-span-1">
                       <FormLabel>Symbol</FormLabel>
-                      <SymbolsListSelect field={field} />
+                      <SymbolsListSelect field={{
+                        ...field,
+                        onChange: (value: string) => {
+                          setSymbol(value);
+                          field.onChange(value);
+                          // @ts-expect-error - This is a workaround to clear the expiration date
+                          form.setValue("expirationDate", null);
+                          // @ts-expect-error - This is a workaround to clear the expiration date
+                          setExpirationDate(null);
+                        }
+                      }} />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -194,7 +221,14 @@ export function OptionsCalculator() {
                             initialFocus
                             disabled={(date) => {
                               const dayOfWeek = date.getDay();
-                              return dayOfWeek !== 5;
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+                              if(symbol?.includes("SPY") || symbol?.includes("QQQ") || symbol?.includes("IWM") || symbol?.includes("NDX")) {
+                                return dayOfWeek === 0 || 
+                                dayOfWeek === 6 || 
+                                date < today || bankHoliday(date);
+                              } 
+                              return dayOfWeek !== 5 || date < today || bankHoliday(date);
                             }}
                           />
                         </PopoverContent>
@@ -203,9 +237,7 @@ export function OptionsCalculator() {
                     </FormItem>
                   )}
                 />
-              </div>
-
-              <Button
+                <Button
                 type="submit"
                 className="w-full"
                 size="lg"
@@ -222,6 +254,7 @@ export function OptionsCalculator() {
                   "View Option Chain"
                 )}
               </Button>
+              </div>
             </form>
           </Form>
         </CardContent>
@@ -237,10 +270,9 @@ export function OptionsCalculator() {
         expirationDate={expirationDate}
       />
       
-      
       <ResultsSection 
         showResults={showResults}
-        error={isError}
+        error={error}
         isLoading={isLoading}
         lastRefreshTime={lastRefreshTime}
         setRefreshInterval={setRefreshInterval}
@@ -250,7 +282,7 @@ export function OptionsCalculator() {
         symbol={form.getValues("symbol")}
         expiryDate={form.getValues("expirationDate")}
         underlyingPrice={underlyingPrice}
-        wasSubmitted={wasSubmitted}
+        wasSubmitted={shouldScrollTable}
       />
     </div>
   );
