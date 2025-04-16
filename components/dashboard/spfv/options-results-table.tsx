@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { useEffect, useRef } from "react"
+import { useLastPriceInfo } from "@/hooks/useLastPriceInfo"
 
 interface SPFVData {
   spfv: {
@@ -69,6 +70,12 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
     ...putOptions.filter(option => option.spfvData?.spfv?.spfv).map(option => option.strikePrice)
   ]);
 
+    // Use our custom hook to fetch and manage last price info
+    const endDate = expiryDate ? format(expiryDate, 'yyyyMMdd') : undefined;
+    const { 
+      data: lastPriceInfo, 
+    } = useLastPriceInfo(symbol, endDate, 3000);
+
   // Use effect to scroll to the current price when component is mounted or data changes
   useEffect(() => {
     if (tableContainerRef.current && sortedStrikes.length > 0 && underlyingPrice) {
@@ -111,7 +118,9 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
             </CardTitle>
             <CardDescription className="font-bold">
               {expiryDate ? `Expiring ${format(expiryDate, "MMMM d, yyyy")}` : ""}
-              {underlyingPrice ? ` • Stock Price: $${underlyingPrice.toFixed(2)}` : ""}
+              {lastPriceInfo ? ` • Stock Price: $${lastPriceInfo.underlyingPrice.toFixed(2)}` : ""}
+              {lastPriceInfo ? ` • Stock Price Change: $${lastPriceInfo.lastTradeAmountChange.toFixed(2)}` : ""}
+              {lastPriceInfo ? ` • Stock Price Percent Change: $${lastPriceInfo.lastTradePercentChange.toFixed(2)}` : ""}
             </CardDescription>
           </div>
           <div className="flex flex-col md:flex-row gap-2">
@@ -242,9 +251,9 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                         {callOption.last ? callOption.last.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
-                        "px-4 py-1 align-middle text-center font-bold",
+                        "px-4 py-1 align-middle text-center font-bold border-x border-primary dark:border-gray-600",
                         isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : "",
-                        callSPFV ? "text-blue-600 bg-blue-50/50 dark:text-blue-300 dark:bg-blue-900/40" : ""
+                        callSPFV ? "text-primary dark:text-gray-100" : ""
                       )}>
                         {callSPFV ? 
                           (typeof callSPFV === 'number' ? 
@@ -265,9 +274,9 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                       
                       {/* Put side */}
                       <td className={cn(
-                        "px-4 py-1 align-middle text-center font-bold",
+                        "px-4 py-1 align-middle text-center font-bold border-x border-primary dark:border-gray-600",
                         isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : "",
-                        putSPFV ? "text-blue-600 bg-blue-50/50 dark:text-blue-300 dark:bg-blue-900/40" : ""
+                        putSPFV ? "text-primary dark:text-gray-100" : ""
                       )}>
                         {putSPFV ? 
                           (typeof putSPFV === 'number' ? 
