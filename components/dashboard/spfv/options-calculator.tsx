@@ -51,8 +51,8 @@ export function OptionsCalculator() {
   const [expirationDate, setExpirationDate] = useState<Date>();
   const [showResults, setShowResults] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(0);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
+  //const [isRefreshing, setIsRefreshing] = useState(false);
+  //const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
   // New state specifically for controlling table scrolling
   const [shouldScrollTable, setShouldScrollTable] = useState(false);
 
@@ -83,9 +83,9 @@ export function OptionsCalculator() {
   // Update last refresh time when data changes
   useEffect(() => {
     if ((callOptions.length > 0 || putOptions.length > 0) && !isLoading) {
-      setLastRefreshTime(new Date());
+      //setLastRefreshTime(new Date());
       setShowResults(true);
-      setIsRefreshing(false);
+      //setIsRefreshing(false);
       // Don't reset shouldScrollTable here so it stays true after form submission
     }
   }, [callOptions, putOptions, isLoading]);
@@ -103,13 +103,13 @@ export function OptionsCalculator() {
   }, [shouldScrollTable, isLoading, callOptions.length, putOptions.length]);
 
   // Handle manual refresh button click
-  const handleRefresh = async () => {
+  /* const handleRefresh = async () => {
     if (!symbol || !expirationDate || isRefreshing) return;
     setShouldScrollTable(false); // Don't scroll on manual refresh
     setIsRefreshing(true);
     await mutate();
     await mutateTiers();
-  };
+  }; */
 
   // Submit handler
   async function onSubmit(data: OptionsCalculatorFormValues) {
@@ -274,9 +274,9 @@ export function OptionsCalculator() {
         showResults={showResults}
         error={error}
         isLoading={isLoading}
-        lastRefreshTime={lastRefreshTime}
-        setRefreshInterval={setRefreshInterval}
-        handleRefresh={handleRefresh}
+        //lastRefreshTime={lastRefreshTime}
+        //setRefreshInterval={setRefreshInterval}
+        //handleRefresh={handleRefresh}
         callOptions={callOptions}
         putOptions={putOptions}
         symbol={form.getValues("symbol")}
