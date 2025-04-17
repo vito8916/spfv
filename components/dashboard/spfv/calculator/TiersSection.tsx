@@ -31,6 +31,7 @@ export function TiersSection({
   symbol,
   expirationDate,
 }: TiersSectionProps) {
+  
   if (tiersLoading) {
     return <TiersCardsSkeleton />;
   }
