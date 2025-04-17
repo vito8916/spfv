@@ -1,5 +1,4 @@
 import useSWR from "swr";
-import { getFilteredSymbolChain } from "@/utils/spfv/getFilteredSymbolChain";
 import { useMemo } from "react";
 
 interface SPFVData {
@@ -46,27 +45,28 @@ interface OptionsChainResponse {
   };
 }
 
-// Custom fetcher for the options chain data
-const optionsChainFetcher = async (symbol: string, expirationDate: Date) => {
-  if (!symbol || !expirationDate) return null;
-  return getFilteredSymbolChain(symbol, expirationDate);
-};
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 
 export function useOptionsChain(symbol: string | undefined, expirationDate: Date | undefined, refreshInterval = 0) {
   // Only fetch if we have both symbol and expirationDate
   const shouldFetch = !!(symbol && expirationDate);
-  
-  // Create a unique key for SWR based on the inputs
-  const swrKey = shouldFetch ? [symbol, expirationDate] : null;
-  
+
+  const params = new URLSearchParams({
+    symbol: symbol || "",
+    date: expirationDate?.toISOString() || ""
+  });
+
   const { data, error, isLoading, mutate } = useSWR(
-    swrKey,
-    () => optionsChainFetcher(symbol!, expirationDate!),
-    {
-      refreshInterval: refreshInterval,
-      revalidateOnFocus: false,
-      //dedupingInterval: 2000, // Don't revalidate more than once every 2 seconds
-    }
+      shouldFetch ? `/api/spfv/get-filtered-chain?${params.toString()}` : null,
+      fetcher,
+      {
+        refreshInterval: refreshInterval,
+        revalidateOnFocus: false,
+        shouldRetryOnError: false,
+        // Disable caching to always get fresh data
+        dedupingInterval: 0
+      }
   );
 
   // Process the response data into the format expected by the component
