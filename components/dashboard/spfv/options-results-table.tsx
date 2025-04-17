@@ -137,15 +137,17 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
               }
             </CardDescription>
           </div>
-          <div className="flex flex-col md:flex-row gap-2">
-            { atrLoading ? (
+          <div>
+          { atrLoading ? (
               <Skeleton className="h-4 w-[100px] bg-blue-500/20 dark:bg-blue-400/20" />                  
             ) : (
               atrData && (
                 <Badge variant="outline" className="self-start md:self-auto border-blue-500 text-blue-500 dark:border-blue-400 dark:text-blue-400 text-md font-bold">
-                ATR: {atrData.dataPoints[atrData.dataPoints.length - 1].value.toFixed(2)}
+                 Average True Range: ${atrData.dataPoints[atrData.dataPoints.length - 1].value.toFixed(2)}
               </Badge>
             ))}
+          </div>
+          <div className="flex flex-col md:flex-row gap-2">
             <Badge variant="outline" className="self-start md:self-auto border-primary">
               {sortedStrikes.length} strikes available
             </Badge>
