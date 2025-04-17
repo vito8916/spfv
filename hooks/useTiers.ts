@@ -1,5 +1,4 @@
 import useSWR from 'swr';
-import { format } from 'date-fns';
 
 interface TierOption {
   strike: number;
@@ -25,17 +24,19 @@ const fetcher = async (url: string) => {
 }
 
 export function useTiers(symbol?: string, expiration?: Date, refreshInterval = 0) {
-  const formattedDate = expiration ? format(expiration, 'yyyyMMdd') : null;
-  const shouldFetch = !!symbol && !!formattedDate;
+  //const formattedDate = expiration ? format(expiration, 'yyyyMMdd') : null;
+  const shouldFetch = !!symbol && !!expiration;
 
   
   const { data, error, isLoading, isValidating, mutate } = useSWR(
-    shouldFetch ? `/api/spfv/tiers?symbol=${symbol}&expirationDate=${formattedDate}` : null,
+    shouldFetch ? `/api/spfv/get-tiers?symbol=${symbol}&expirationDate=${expiration}` : null,
     fetcher,
     {
       refreshInterval: refreshInterval,
       revalidateOnFocus: false,
-      shouldRetryOnError: false
+      shouldRetryOnError: false,
+      // Disable caching to always get fresh data
+      dedupingInterval: 0
     }
   );
   
