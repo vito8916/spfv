@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { useEffect, useRef } from "react"
 import { useLastPriceInfo } from "@/hooks/useLastPriceInfo"
+import { useATRData } from "@/hooks/useATRData"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface SPFVData {
   spfv: {
@@ -71,10 +73,12 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
   ]);
 
     // Use our custom hook to fetch and manage last price info
-    const endDate = expiryDate ? format(expiryDate, 'yyyyMMdd') : undefined;
     const { 
       data: lastPriceInfo, 
-    } = useLastPriceInfo(symbol, endDate, 3000);
+    } = useLastPriceInfo(symbol, expiryDate, 30000);
+
+    const { data: atrData, isLoading: atrLoading } = useATRData(symbol, 0);
+
 
   // Use effect to scroll to the current price when component is mounted or data changes
   useEffect(() => {
@@ -134,13 +138,21 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
             </CardDescription>
           </div>
           <div className="flex flex-col md:flex-row gap-2">
-            <Badge variant="outline" className="self-start md:self-auto">
+            { atrLoading ? (
+              <Skeleton className="h-4 w-[100px] bg-blue-500/20 dark:bg-blue-400/20" />                  
+            ) : (
+              atrData && (
+                <Badge variant="outline" className="self-start md:self-auto border-blue-500 text-blue-500 dark:border-blue-400 dark:text-blue-400 text-md font-bold">
+                ATR: {atrData.dataPoints[atrData.dataPoints.length - 1].value.toFixed(2)}
+              </Badge>
+            ))}
+            <Badge variant="outline" className="self-start md:self-auto border-primary">
               {sortedStrikes.length} strikes available
             </Badge>
-            <Badge variant="outline" className="self-start md:self-auto">
+            <Badge variant="outline" className="self-start md:self-auto border-primary">
               {strikesWithSPFVData.size} strikes with SPFV values
             </Badge>
-            <Badge variant="default" className="self-start md:self-auto text-xs">
+            <Badge variant="default" className="self-start md:self-auto text-xs border-primary">
               {callsWithSPFV} calls • {putsWithSPFV} puts
             </Badge>
           </div>
@@ -229,39 +241,39 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                     >
                       {/* Call side */}
                       <td className={cn(
-                        "px-4 py-1 align-middle text-center",
+                        "px-4 py-2 align-middle text-center",
                         isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {callOption.volatility ? `${(callOption.volatility * 100).toFixed(2)}%` : "-"}
                       </td>
                       <td className={cn(
-                        "px-4 py-1 align-middle text-center",
+                        "px-4 py-2 align-middle text-center",
                         isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : "",
                         callChange > 0 ? "text-green-600 dark:text-green-400" : callChange < 0 ? "text-red-600 dark:text-red-400" : ""
                       )}>
                         {callChange !== 0 ? callChange.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
-                        "px-4 py-1 align-middle text-center",
+                        "px-4 py-2 align-middle text-center",
                         isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {callOption.bid ? callOption.bid.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
-                        "px-4 py-1 align-middle text-center",
+                        "px-4 py-2 align-middle text-center",
                         isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {callOption.ask ? callOption.ask.toFixed(2) : "-"}
                       </td>
                       
                       <td className={cn(
-                        "px-4 py-1 align-middle text-center",
+                        "px-4 py-2 align-middle text-center",
                         isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {callOption.last ? callOption.last.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
-                        "px-4 py-1 align-middle text-center font-bold border-x border-primary dark:border-gray-600",
+                        "px-4 py-2 align-middle text-center font-bold border-x border-primary dark:border-gray-600",
                         isCallInTheMoney ? "bg-primary/10 dark:bg-primary/20" : "",
                         callSPFV ? "text-primary dark:text-gray-100" : ""
                       )}>
@@ -274,7 +286,7 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                       
                       {/* Strike price (middle column) */}
                       <td className={cn(
-                        "px-4 py-1 align-middle text-center font-bold",
+                        "px-4 py-2 align-middle text-center font-bold",
                         "bg-gray-100 dark:bg-gray-800", 
                         isCurrentPrice ? "bg-yellow-100 dark:bg-yellow-900/50 outline-1 outline-yellow-400 dark:outline-yellow-600" : ""
                       )}>
@@ -284,7 +296,7 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                       
                       {/* Put side */}
                       <td className={cn(
-                        "px-4 py-1 align-middle text-center font-bold border-x border-primary dark:border-gray-600",
+                        "px-4 py-2 align-middle text-center font-bold border-x border-primary dark:border-gray-600",
                         isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : "",
                         putSPFV ? "text-primary dark:text-gray-100" : ""
                       )}>
@@ -295,33 +307,33 @@ export function OptionsResultsTable({ callOptions, putOptions, symbol, expiryDat
                           ) : "-"}
                       </td>
                       <td className={cn(
-                        "px-4 py-1 align-middle text-center",
+                        "px-4 py-2 align-middle text-center",
                         isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {putOption.last ? putOption.last.toFixed(2) : "-"}
                       </td>
                       
                       <td className={cn(
-                        "px-4 py-1 align-middle text-center",
+                        "px-4 py-2 align-middle text-center",
                         isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {putOption.bid ? putOption.bid.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
-                        "px-4 py-1 align-middle text-center",
+                        "px-4 py-2 align-middle text-center",
                         isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {putOption.ask ? putOption.ask.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
-                        "px-4 py-1 align-middle text-center",
+                        "px-4 py-2 align-middle text-center",
                         isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : "",
                         putChange > 0 ? "text-green-600 dark:text-green-400" : putChange < 0 ? "text-red-600 dark:text-red-400" : ""
                       )}>
                         {putChange !== 0 ? putChange.toFixed(2) : "-"}
                       </td>
                       <td className={cn(
-                        "px-4 py-1 align-middle text-center",
+                        "px-4 py-2 align-middle text-center",
                         isPutInTheMoney ? "bg-primary/10 dark:bg-primary/20" : ""
                       )}>
                         {putOption.volatility ? `${(putOption.volatility * 100).toFixed(2)}%` : "-"}
