@@ -3,6 +3,7 @@ import { format, addDays } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { bankHoliday } from '@/utils/utils'
 
 interface HorizontalDatePickerProps {
   selectedDate?: Date
@@ -27,7 +28,7 @@ export function HorizontalDatePicker({
     const start = new Date(startDate)
     start.setHours(0, 0, 0, 0)
     
-    // Generate dates, filtering out weekends and past dates
+    // Generate dates, filtering out weekends, bank holidays, and past dates
     const generatedDates: Date[] = []
     let currentDate = new Date(start)
     let count = 0
@@ -38,8 +39,14 @@ export function HorizontalDatePicker({
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       
-      // Skip weekends and past dates
-      if (!(dayOfWeek === 0 || dayOfWeek === 6 || currentDate < today || disabled?.(currentDate))) {
+      // Skip weekends, bank holidays, and past dates
+      if (
+        !(dayOfWeek === 0 || 
+          dayOfWeek === 6 || 
+          currentDate < today || 
+          bankHoliday(currentDate) || 
+          disabled?.(currentDate))
+      ) {
         generatedDates.push(new Date(currentDate))
       }
       
