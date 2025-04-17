@@ -12,7 +12,7 @@ const DashboardLayout = ({children}: Readonly<{
     return (
         <SidebarProvider>
             <AppSidebar/>
-            <SidebarInset>
+            <SidebarInset className="w-full overflow-x-hidden">
                 <AppSidebarHeader/>
                 {children}
             </SidebarInset>
