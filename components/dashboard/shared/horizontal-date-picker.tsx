@@ -1,6 +1,8 @@
 import * as React from 'react'
 import { format, addDays } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface HorizontalDatePickerProps {
   selectedDate?: Date
@@ -8,6 +10,7 @@ interface HorizontalDatePickerProps {
   startDate?: Date
   daysToShow?: number
   className?: string
+  disabled?: (date: Date) => boolean
 }
 
 export function HorizontalDatePicker({
@@ -15,7 +18,8 @@ export function HorizontalDatePicker({
   onDateSelect,
   startDate = new Date(),
   daysToShow = 30,
-  className
+  className,
+  disabled
 }: HorizontalDatePickerProps) {
   // Create an array of dates to display
   const dates = React.useMemo(() => {
@@ -29,13 +33,13 @@ export function HorizontalDatePicker({
     let count = 0
     
     // We'll continue until we have the requested number of valid dates
-    while (generatedDates.length < daysToShow && count < 100) { // Safety limit
+    while (generatedDates.length < daysToShow && count < 150) { // Safety limit
       const dayOfWeek = currentDate.getDay()
       const today = new Date()
       today.setHours(0, 0, 0, 0)
       
       // Skip weekends and past dates
-      if (!(dayOfWeek === 0 || dayOfWeek === 6 || currentDate < today)) {
+      if (!(dayOfWeek === 0 || dayOfWeek === 6 || currentDate < today || disabled?.(currentDate))) {
         generatedDates.push(new Date(currentDate))
       }
       
@@ -101,16 +105,17 @@ export function HorizontalDatePicker({
                     <span className="text-xs mb-1 text-gray-500">
                       {dayName}
                     </span>
-                    <button
+                    <Button
+                      variant="ghost"
                       onClick={() => handleDateClick(date)}
                       className={cn(
-                        "flex items-center justify-center w-10 h-10 rounded-full text-sm transition-colors",
-                        selected ? "bg-blue-600 text-white font-medium" : "hover:bg-gray-100"
+                        " flex items-center justify-center w-10 h-10 rounded-full text-sm transition-colors",
+                        selected ? "bg-primary text-white font-medium hover:bg-primary hover:text-white" : "hover:bg-gray-100"
                       )}
                       aria-selected={selected}
                     >
                       {dayNumber}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )
@@ -118,6 +123,14 @@ export function HorizontalDatePicker({
           </div>
         </div>
       ))}
+    </div>
+  )
+}
+
+export function HorizontalDatePickerSkeleton() {
+  return (
+    <div className="flex overflow-x-auto pb-2 hide-scrollbar">
+      <Skeleton className="h-10 w-10 rounded-full" />
     </div>
   )
 }

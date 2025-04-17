@@ -24,7 +24,7 @@ export default function HorizontalDatePickerExample() {
           selectedDate={selectedDate}
           onDateSelect={handleDateSelect}
           startDate={new Date()} // Start from today
-          daysToShow={60} // Show 30 days
+          daysToShow={30} // Show 30 days
         />
         
         {selectedDate && (
