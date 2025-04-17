@@ -25,6 +25,7 @@ export default function ChainTableSkeleton() {
               <Skeleton className="h-3 w-[300px]" />
             </div>
             <div className="flex gap-4">
+            <Skeleton className="h-4 w-[100px] bg-blue-500/20 dark:bg-blue-400/20" />                  
               <Skeleton className="h-4 w-[100px]" />
               <Skeleton className="h-4 w-[100px]" />
               <Skeleton className="h-4 w-[100px]" />
