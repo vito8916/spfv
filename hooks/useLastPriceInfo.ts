@@ -2,7 +2,7 @@ import useSWR from "swr";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export function useLastPriceInfo(symbol: string | undefined, endDateTime: string | undefined, intervalTime = 0) {
+export function useLastPriceInfo(symbol: string | undefined, endDateTime: Date | undefined, intervalTime = 0) {
   console.log("symbol:::::::", symbol);
   console.log("intervalTime::::::", intervalTime);
 
@@ -10,7 +10,7 @@ export function useLastPriceInfo(symbol: string | undefined, endDateTime: string
   console.log("shouldFetch::::::", shouldFetch);
 
   const { data, error, isLoading, mutate } = useSWR(
-    shouldFetch ? `/api/spfv/getLastPriceInfo?symbol=${symbol}&endDateTime=${endDateTime}` : null,
+    shouldFetch ? `/api/spfv/get-last-price-info?symbol=${symbol}&endDateTime=${endDateTime}` : null,
     fetcher,
     {
       refreshInterval: intervalTime,
