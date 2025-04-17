@@ -91,15 +91,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Format dates for the different APIs
-   // const chainDateFormat = formatDateForChain(date);
     const chainDateFormat = format(date, "yyyyMMdd");
     const spfvDateFormat = format(date, "MM-dd-yyyy");
-    
-    console.log(`Using date formats: Chain API: ${chainDateFormat}, SPFV API: ${spfvDateFormat}`);
-    
+        
     // Step 1: Fetch option chain data
-    console.log(`Fetching option chain for ${symbol} on ${chainDateFormat}`);
     const chainApiUrl = `${CHAIN_API_URL}?symbol=${symbol}&StartDateTime=${chainDateFormat}&EndDateTime=${chainDateFormat}&callOrPut=BOTH`;
     
     const chainResponse = await fetch(chainApiUrl, {
