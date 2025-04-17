@@ -31,7 +31,7 @@ const mainNavItems: NavItem[] = [
     items: [
       {
         title: "SP Fair Value",
-        url: "/spfv/calculator",
+        url: "/spfv/options",
         icon: Calculator,
       },
       {
