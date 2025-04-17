@@ -1,6 +1,4 @@
 import React from "react";
-import { format } from "date-fns";
-import AutoRefreshMenu from "@/components/dashboard/shared/auto-refresh-menu";
 import { OptionsResultsTable } from "../options-results-table";
 import ChainTableSkeleton from "@/components/skeletons/chain-table-skeleton";
 // Define the SPFVData interface
@@ -34,9 +32,6 @@ interface ResultsSectionProps {
   showResults: boolean;
   error: boolean;
   isLoading: boolean;
-  lastRefreshTime: Date | null;
-  setRefreshInterval: (interval: number) => void;
-  handleRefresh: () => Promise<void>;
   callOptions: OptionData[];
   putOptions: OptionData[];
   symbol?: string;
@@ -49,15 +44,11 @@ export function ResultsSection({
   showResults,
   error,
   isLoading,
-  lastRefreshTime,
-  setRefreshInterval,
-  handleRefresh,
   callOptions,
   putOptions,
   symbol,
   expiryDate,
   underlyingPrice,
-  wasSubmitted,
 }: ResultsSectionProps) {
   if (isLoading) {
     return <ChainTableSkeleton />;
@@ -79,17 +70,6 @@ export function ResultsSection({
       <>
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold">Options with SPFV Values</h2>
-          <div className="flex items-center gap-4">
-            <AutoRefreshMenu
-              onRefreshIntervalChange={setRefreshInterval}
-              onManualRefresh={handleRefresh}
-            />
-            {lastRefreshTime && (
-              <span className="text-xs text-muted-foreground">
-                Last updated: {format(lastRefreshTime, "PPpp")}
-              </span>
-            )}
-          </div>
         </div>
 
         <OptionsResultsTable
@@ -97,8 +77,8 @@ export function ResultsSection({
           putOptions={putOptions}
           symbol={symbol || ""}
           expiryDate={expiryDate}
-          underlyingPrice={underlyingPrice || 0}
-          wasSubmitted={wasSubmitted}
+            underlyingPrice={underlyingPrice || 0}
+            wasSubmitted={false}
         />
 
       </>
