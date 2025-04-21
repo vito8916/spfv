@@ -17,6 +17,7 @@ import { isMarketOpen } from "@/utils/utils";
 import MarketClosedMessage from "@/components/dashboard/spfv/calculator/MarketClosedMessage";
 import ATRLineGraph from "@/components/dashboard/spfv/options/atr-line-graph";
 import { useSWRConfig } from "swr";
+import SPFVBeast from "../spfv-beast";
 
 
 export default function HeaderOptions() {
@@ -159,8 +160,14 @@ export default function HeaderOptions() {
                 symbol={selectedSymbol}
                 refreshInterval={refreshInterval}
               />
-          )
-          }
+          )}
+          {selectedOptionType === "beast" && (
+            <SPFVBeast 
+              symbol={selectedSymbol} 
+              expirationDate={selectedDate} 
+              refreshInterval={refreshInterval}
+            />
+          )}
         </>
       )}
     </div>
