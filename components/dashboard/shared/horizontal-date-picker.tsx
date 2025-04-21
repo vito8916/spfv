@@ -55,7 +55,7 @@ export function HorizontalDatePicker({
     }
     
     return generatedDates
-  }, [startDate, daysToShow])
+  }, [startDate, daysToShow, disabled])
 
   // Group dates by month
   const monthGroups = React.useMemo(() => {
