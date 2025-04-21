@@ -1,0 +1,242 @@
+'use client'
+
+import React from 'react'
+import { Line } from 'recharts';
+import { Bar } from 'recharts';
+import { CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { ComposedChart } from 'recharts';
+import { TooltipProps } from 'recharts';
+import { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent';
+import { TrendingDown, TrendingUp } from "lucide-react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  ChartConfig,
+  ChartContainer,
+} from "@/components/ui/chart"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useSpfvBeastMonthly } from '@/hooks/use-spfv-beast-monthly';
+
+interface SPFVBeastProps {
+    symbol: string;
+    expirationDate?: Date;
+    refreshInterval?: number;
+}
+
+// Chart configuration
+const chartConfig = {
+  price: {
+    label: "Price",
+    color: "hsl(var(--chart-1))",
+  },
+  volume: {
+    label: "Volume",
+    color: "hsl(var(--chart-2))",
+  },
+} satisfies ChartConfig;
+
+// Format large numbers with suffixes
+const formatNumber = (value: number): string => {
+  if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+  if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
+  return value.toString();
+};
+
+// Custom tooltip to format the numbers
+const CustomTooltip = ({ 
+  active, 
+  payload, 
+  label 
+}: TooltipProps<ValueType, NameType>) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="rounded-lg border bg-background p-2 shadow-sm">
+        <div className="grid grid-cols-3 gap-2">
+          <div className="flex flex-col">
+            <span className="text-[0.70rem] uppercase text-muted-foreground">
+              Date
+            </span>
+            <span className="font-bold text-muted-foreground">
+              {new Date(label).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[0.70rem] uppercase text-muted-foreground">
+              Price
+            </span>
+            <span className="font-bold text-muted-foreground">
+              ${payload[0]?.value}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[0.70rem] uppercase text-muted-foreground">
+              Volume
+            </span>
+            <span className="font-bold text-muted-foreground">
+              {payload[1]?.value ? Number(payload[1].value).toLocaleString() : ''}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+export default function SPFVBeast({ symbol, expirationDate, refreshInterval = 0 }: SPFVBeastProps) {
+
+    const { data, error, isLoading } = useSpfvBeastMonthly(symbol, expirationDate, refreshInterval);
+    
+    // Sort data from oldest to newest
+    const sortedData = data?.sort((a, b) => 
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+  // Calculate min, max, avg price
+  const prices = sortedData?.map(d => d.price);
+  const minPrice = Math.min(...(prices || []));
+  const maxPrice = Math.max(...(prices || []));
+  const avgPrice = Number((prices?.reduce((a, b) => a + b, 0) || 0 / (prices?.length || 1)).toFixed(2));
+
+  // Calculate price trend (from first to last data point)
+  const firstPrice = sortedData?.[0]?.price || 0;
+  const lastPrice = sortedData?.[sortedData.length - 1]?.price || 0;
+  const priceDiff = lastPrice - firstPrice;
+  const percentChange = ((priceDiff / firstPrice) * 100);
+  const isTrendingUp = percentChange > 0;
+  const trendPercentage = Math.abs(percentChange).toFixed(2);
+
+  
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-4 w-1/2 mt-2" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-[500px] w-full" />
+        </CardContent>
+        <CardFooter>
+          <Skeleton className="h-4 w-full" />
+        </CardFooter>
+      </Card>
+    );
+  }
+
+  // Handle error state
+  if (error || !sortedData?.length) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            {symbol} Premarket Beast Numbers
+          </CardTitle>
+          <CardDescription className="text-red-500">
+            Error loading data. Please try again later.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="h-[500px] flex items-center justify-center">
+          <p className="text-muted-foreground">No data available</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>
+          {symbol} Premarket Beast Numbers
+        </CardTitle>
+        <CardDescription>
+          Data from {new Date(sortedData[0].date).toLocaleDateString()} to {new Date(sortedData[sortedData.length-1].date).toLocaleDateString()}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer config={chartConfig} className="h-[500px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart
+              accessibilityLayer
+              data={sortedData}
+              margin={{
+                top: 10,
+                right: 0,
+                left: 0,
+                bottom: 10,
+              }}
+            >
+              <CartesianGrid vertical={false} strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="date" 
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', {month: 'numeric', day: 'numeric'})}
+              />
+              <YAxis 
+                yAxisId="left"
+                domain={['auto', 'auto']}
+                tickFormatter={(value) => value.toFixed(0)}
+                width={60}
+              />
+              <YAxis 
+                yAxisId="right" 
+                orientation="right" 
+                dataKey="totalVolume"
+                tickFormatter={formatNumber}
+                domain={[0, 'dataMax']}
+                width={80}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend wrapperStyle={{ paddingTop: "10px" }} />
+              <Line 
+                yAxisId="left"
+                type="monotone" 
+                dataKey="price" 
+                stroke="var(--primary)"
+                strokeWidth={2}
+                dot={{ r: 3 }}
+                activeDot={{ r: 6, strokeWidth: 0 }}
+                name="Price"
+              />
+              <Bar 
+                yAxisId="right"
+                dataKey="totalVolume" 
+                fill="hsl(var(--chart-2))"
+                name="Volume"
+                barSize={20}
+                opacity={0.8}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </ChartContainer>
+      </CardContent>
+      <CardFooter className="flex-col items-start gap-2 text-sm">
+        <div className="flex gap-2 font-medium leading-none">
+          {isTrendingUp ? (
+            <>
+              Trending up by {trendPercentage}% 
+              <TrendingUp className="h-4 w-4 text-green-500" />
+            </>
+          ) : (
+            <>
+              Trending down by {trendPercentage}% 
+              <TrendingDown className="h-4 w-4 text-red-500" />
+            </>
+          )}
+        </div>
+        <div className="leading-none text-muted-foreground">
+          Min: ${minPrice.toFixed(2)} | Max: ${maxPrice.toFixed(2)} | Avg: ${avgPrice.toFixed(2)}
+        </div>
+      </CardFooter>
+    </Card>
+  )
+}
