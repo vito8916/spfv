@@ -125,7 +125,7 @@ export default function HeaderOptions() {
             const dayOfWeek = date.getDay();
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            if(selectedSymbol?.includes("SPY") || selectedSymbol?.includes("QQQ") || selectedSymbol?.includes("IWM") || selectedSymbol?.includes("NDX")) {
+            if(selectedSymbol?.includes("SPY") || selectedSymbol?.includes("QQQ") || selectedSymbol?.includes("IWM") || selectedSymbol?.includes("NDX") || selectedSymbol?.includes("SPX")) {
               return dayOfWeek === 0 || 
               dayOfWeek === 6 || 
               date < today;
