@@ -34,7 +34,7 @@ export default async function OptionsPage() {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Sp Fair Value</h1>
+          <h1 className="text-3xl font-bold">SP Fair Value</h1>
           <p className="text-muted-foreground">
             Calculate option fair values based on market data
           </p>
