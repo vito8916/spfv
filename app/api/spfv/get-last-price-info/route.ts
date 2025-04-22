@@ -29,10 +29,10 @@ export async function GET(request: NextRequest) {
     const lastPriceInfo = 
         {
             symbol: symbol,
-            underlyingPrice: data?.callOptionChain?.underlyingPrice,
-            lastTradePrice: data?.callOptionChain?.lastTradePrice,
-            lastTradeAmountChange: data?.callOptionChain?.lastTradeAmountChange,
-            lastTradePercentChange: data?.callOptionChain?.lastTradePercentChange,
+            underlyingPrice: data?.callOptionChain?.underlyingPrice || 0,
+            lastTradePrice: data?.callOptionChain?.lastTradePrice || 0,
+            lastTradeAmountChange: data?.callOptionChain?.lastTradeAmountChange || 0,
+            lastTradePercentChange: data?.callOptionChain?.lastTradePercentChange || 0,
         };
     
 
