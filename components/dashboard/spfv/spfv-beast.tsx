@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/chart"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useSpfvBeastMonthly } from '@/hooks/use-spfv-beast-monthly';
-
+import { format } from 'date-fns';
 interface SPFVBeastProps {
     symbol: string;
     expirationDate?: Date;
@@ -63,7 +63,7 @@ const CustomTooltip = ({
               Date
             </span>
             <span className="font-bold text-muted-foreground">
-              {new Date(label).toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}
+            {format(new Date(label as number), "M/d")}
             </span>
           </div>
           <div className="flex flex-col">
@@ -90,28 +90,8 @@ const CustomTooltip = ({
 };
 
 export default function SPFVBeast({ symbol, expirationDate, refreshInterval = 0 }: SPFVBeastProps) {
-
-    const { data, error, isLoading } = useSpfvBeastMonthly(symbol, expirationDate, refreshInterval);
-    
-    // Sort data from oldest to newest
-    const sortedData = data?.sort((a, b) => 
-        new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
-
-  // Calculate min, max, avg price
-  const prices = sortedData?.map(d => d.price);
-  const minPrice = Math.min(...(prices || []));
-  const maxPrice = Math.max(...(prices || []));
-  const avgPrice = Number((prices?.reduce((a, b) => a + b, 0) || 0 / (prices?.length || 1)).toFixed(2));
-
-  // Calculate price trend (from first to last data point)
-  const firstPrice = sortedData?.[0]?.price || 0;
-  const lastPrice = sortedData?.[sortedData.length - 1]?.price || 0;
-  const priceDiff = lastPrice - firstPrice;
-  const percentChange = ((priceDiff / firstPrice) * 100);
-  const isTrendingUp = percentChange > 0;
-  const trendPercentage = Math.abs(percentChange).toFixed(2);
-
+    // Use enhanced hook with pre-processed data and stats
+    const { data, stats, error, isLoading } = useSpfvBeastMonthly(symbol, expirationDate, refreshInterval);
   
   // Handle loading state
   if (isLoading) {
@@ -132,7 +112,7 @@ export default function SPFVBeast({ symbol, expirationDate, refreshInterval = 0 
   }
 
   // Handle error state
-  if (error || !sortedData?.length) {
+  if (error || !data?.length) {
     return (
       <Card>
         <CardHeader>
@@ -157,7 +137,8 @@ export default function SPFVBeast({ symbol, expirationDate, refreshInterval = 0 
           {symbol} Premarket Beast Numbers
         </CardTitle>
         <CardDescription>
-          Data from {new Date(sortedData[0].date).toLocaleDateString()} to {new Date(sortedData[sortedData.length-1].date).toLocaleDateString()}
+          {stats.formattedDateRange && 
+            `Data from ${stats.formattedDateRange.start} to ${stats.formattedDateRange.end}`}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -165,7 +146,7 @@ export default function SPFVBeast({ symbol, expirationDate, refreshInterval = 0 
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               accessibilityLayer
-              data={sortedData}
+              data={data}
               margin={{
                 top: 10,
                 right: 0,
@@ -175,11 +156,11 @@ export default function SPFVBeast({ symbol, expirationDate, refreshInterval = 0 
             >
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis 
-                dataKey="date" 
+                dataKey="date"
+                tickFormatter={(ts) => format(new Date(ts), "M/d")} 
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', {month: 'numeric', day: 'numeric'})}
               />
               <YAxis 
                 yAxisId="left"
@@ -221,20 +202,20 @@ export default function SPFVBeast({ symbol, expirationDate, refreshInterval = 0 
       </CardContent>
       <CardFooter className="flex-col items-start gap-2 text-sm">
         <div className="flex gap-2 font-medium leading-none">
-          {isTrendingUp ? (
+          {stats.isTrendingUp ? (
             <>
-              Trending up by {trendPercentage}% 
+              Trending up by {stats.trendPct}% 
               <TrendingUp className="h-4 w-4 text-green-500" />
             </>
           ) : (
             <>
-              Trending down by {trendPercentage}% 
+              Trending down by {stats.trendPct}% 
               <TrendingDown className="h-4 w-4 text-red-500" />
             </>
           )}
         </div>
         <div className="leading-none text-muted-foreground">
-          Min: ${minPrice.toFixed(2)} | Max: ${maxPrice.toFixed(2)} | Avg: ${avgPrice.toFixed(2)}
+          Min: ${stats.minPrice.toFixed(2)} | Max: ${stats.maxPrice.toFixed(2)}
         </div>
       </CardFooter>
     </Card>
