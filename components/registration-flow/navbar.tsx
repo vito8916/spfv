@@ -17,6 +17,7 @@ const NavbarRegistrationFlow = () => {
     "/additional-data",
     "/agreements",
     "/questionnaire",
+    "/opra-agreements",
     "/registration-completed",
   ];
 
@@ -40,6 +41,10 @@ const NavbarRegistrationFlow = () => {
     {
       label: "Questionnaire",
       href: "/questionnaire",
+    },
+    {
+      label: "OPRA Agreements",
+      href: "/opra-agreements",
     },
     {
       label: "Registration Completed",
