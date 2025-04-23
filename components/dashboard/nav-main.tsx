@@ -13,7 +13,7 @@ import {
 import { type NavItem } from "@/types";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, UserIcon, Calculator } from "lucide-react";
+import { LayoutGrid, UserIcon, Calculator, BookOpen } from "lucide-react";
 /*
  * Main navigation items
  */
@@ -41,16 +41,11 @@ const mainNavItems: NavItem[] = [
       },
     ],
   },
-  /* {
-        title: 'Analytics',
-        url: '/analytics',
-        icon: BarChart,
-    },
-    {
-        title: 'Reports',
-        url: '/reports',
-        icon: FileText,
-    }, */
+  {
+    title: "Case Studies",
+    url: "/case-studies",
+    icon: BookOpen,
+  },
   {
     title: "Profile",
     url: "/profile",
