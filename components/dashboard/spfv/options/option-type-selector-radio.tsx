@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { Skeleton } from '@/components/ui/skeleton'
-import { BarChart2, LineChart, ChartNoAxesColumn } from 'lucide-react'
+import { ChartNoAxesCombined, ChartSpline, TableCellsMerge } from 'lucide-react'
 
 type OptionType = 'chain' | 'atr' | 'beast'
 
@@ -22,7 +22,7 @@ export function OptionTypeSelectorRadio({ onOptionTypeSelect }: { onOptionTypeSe
             setSelectedOption('chain')
             onOptionTypeSelect('chain')
           }}
-          icon={<LineChart className="mr-2 h-4 w-4" />}
+          icon={<TableCellsMerge className="mr-2 h-4 w-4" />}
           label="Option Chain"
         />
         <RadioOption 
@@ -33,7 +33,7 @@ export function OptionTypeSelectorRadio({ onOptionTypeSelect }: { onOptionTypeSe
             setSelectedOption('atr')
             onOptionTypeSelect('atr')
           }}
-          icon={<BarChart2 className="mr-2 h-4 w-4" />}
+          icon={<ChartSpline className="mr-2 h-4 w-4" />}
           label="ATR"
         />
         <RadioOption 
@@ -44,8 +44,8 @@ export function OptionTypeSelectorRadio({ onOptionTypeSelect }: { onOptionTypeSe
             setSelectedOption('beast')
             onOptionTypeSelect('beast')
           }}
-          icon={<ChartNoAxesColumn className="mr-2 h-4 w-4" />}
-          label="Beast"
+          icon={<ChartNoAxesCombined className="mr-2 h-4 w-4" />}
+          label="PM numbers"
         />
       </div>
     </div>

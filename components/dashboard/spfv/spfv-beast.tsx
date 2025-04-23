@@ -117,7 +117,7 @@ export default function SPFVBeast({ symbol, expirationDate, refreshInterval = 0 
       <Card>
         <CardHeader>
           <CardTitle>
-            {symbol} Premarket Beast Numbers
+            {symbol} Premarket Numbers
           </CardTitle>
           <CardDescription className="text-red-500">
             Error loading data. Please try again later.
@@ -216,6 +216,9 @@ export default function SPFVBeast({ symbol, expirationDate, refreshInterval = 0 
         </div>
         <div className="leading-none text-muted-foreground">
           Min: ${stats.minPrice.toFixed(2)} | Max: ${stats.maxPrice.toFixed(2)}
+        </div>
+        <div className="leading-none text-muted-foreground text-xs mt-2">
+        Premarket Numbers charts show where premarket trading (resting orders) occurred at the highest time and volume intervals. These prices, especially the ones with significant volumes, can act as potential points of interest (resistance / support / pins) in the market.
         </div>
       </CardFooter>
     </Card>
