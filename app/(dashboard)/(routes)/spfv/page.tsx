@@ -134,7 +134,7 @@ async function SPFVContent({ user }: { user: User }) {
                 <div className="h-2 w-3 rounded-full bg-primary/10"></div>
               </div>
             </div>
-            <Link href="/spfv/calculator" className="w-full">
+            <Link href="/spfv/options" className="w-full">
               <button className="flex items-center justify-center w-full text-sm bg-primary/10 text-primary hover:bg-primary/20 px-3 py-2 rounded-md font-medium mt-2 transition-colors">
                 Launch SP Fair Value
                 <ChevronRight className="ml-1 h-4 w-4" />

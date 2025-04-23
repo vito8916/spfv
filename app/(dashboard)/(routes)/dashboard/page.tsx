@@ -350,7 +350,7 @@ const DashboardPage = async () => {
             <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold">Fair Value Dashboard</h1>
-                    <Link href="/spfv/calculator">
+                    <Link href="/spfv/options">
                         <button className="text-sm bg-primary/10 text-primary hover:bg-primary/20 px-3 py-1.5 rounded-md font-medium">
                             Launch Fair Value Tool
                         </button>
