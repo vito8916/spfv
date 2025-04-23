@@ -34,6 +34,8 @@ export type User = {
   opra_pdf_url: string | null
   stripe_customer_id: string | null
   stripe_subscription_id: string | null
+  platform_agreement: boolean
+  opra_agreement: boolean
 };
 
 // Validation schemas
@@ -165,6 +167,27 @@ export async function updateUser(
     console.error('Error updating user:', error);
     return { success: false, error: 'An unexpected error occurred' };
   }
+}
+
+/**
+ * Update user agreements
+ */
+export async function updateUserAgreements(
+  platform_agreements: boolean,
+  opra_agreements: boolean
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { success: false, error: 'Not authenticated' };
+  }
+
+  const { error } = await supabase.from('users').update({ platform_agreements, opra_agreements }).eq('id', user.id);
+  if (error) {
+    console.error('Error updating agreements:', error);
+    return { success: false, error: error.message };
+  }
+  return { success: true };
 }
 
 /**

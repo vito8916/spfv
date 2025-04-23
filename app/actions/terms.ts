@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/server'
 import { cache } from 'react'
 import { revalidatePath } from 'next/cache'
 
-export type TermsType = 'terms_of_service' | 'privacy_policy' | 'cookie_policy' | 'acceptable_use_policy'
+export type TermsType = 'terms_of_service' | 'privacy_policy' | 'cookie_policy' | 'acceptable_use_policy' | 'opra_professional' | 'opra_non_professional'
 
 export const getActiveTerms = cache(async (type?: TermsType | 'all') => {
   const supabase = await createClient()
@@ -71,6 +71,7 @@ export async function acceptTerms(termsId: string) {
   
   return true
 }
+
 
 export const getAllUserTermsAcceptances = cache(async () => {
   const supabase = await createClient()

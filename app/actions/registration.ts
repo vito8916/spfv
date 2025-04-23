@@ -7,6 +7,7 @@ export type RegistrationStep =
     | 'additional_data'
     | 'agreements'
     | 'questionnaire'
+    | 'opra_agreements'
     | 'registration_completed';
 
 /* const STEP_ORDER: RegistrationStep[] = [
