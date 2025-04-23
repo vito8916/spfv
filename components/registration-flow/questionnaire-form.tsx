@@ -163,6 +163,28 @@ const QuestionnaireForm = () => {
     return () => subscription.unsubscribe();
   }, [form, form.watch]);
 
+  function setUserType(data: QuestionnaireFormData) {
+    // A user is non-professional only if they answered "No" to all professional indicators
+    // except isNonProfessional which should be "Yes"
+    const isProfessional = 
+      !data.isNonProfessional || 
+      data.isInvestmentAdvisor || 
+      data.isUsingForBusiness || 
+      data.isReceivingBenefits || 
+      data.isListedAsFinancialProfessional || 
+      data.isRegisteredWithRegulator || 
+      data.isEngagedInFinancialServices || 
+      data.isTradingForOrganization || 
+      data.isContractedForPrivateUse || 
+      data.isUsingOthersCapital || 
+      data.isPerformingRegulatedFunctions || 
+      data.isAssociatedWithFirm || 
+      data.isAssociatedWithPublicCompany || 
+      data.isAssociatedWithBrokerDealer;
+    
+    localStorage.setItem('userType', isProfessional ? 'professional' : 'non-professional');
+  }
+
   const onSubmit = async (data: QuestionnaireFormData) => {
     try {
       setIsLoading(true);
@@ -175,57 +197,24 @@ const QuestionnaireForm = () => {
 
       // Save questionnaire answers
       const result = await saveQuestionnaireAnswers(data);
+
       if (!result.success) {
         throw new Error(result.error);
       }
-
-      // Clear stored answers after successful submission
-      localStorage.removeItem('questionnaireAnswers');
+      //store user type in local storage
+      setUserType(data);
 
       toast.success("Questionnaire submitted successfully");
-
-      // Generate and store PDF based on professional status
-      const pdfEndpoint = data.isNonProfessional 
-        ? "/api/pdf/fill-opra-non-professional" 
-        : "/api/pdf/fill-opra";
-
-      const res = await fetch(pdfEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id }),
-      });
-
-      const response = await res.json();
-
-      if (!res.ok) {
-        throw new Error(response.error || "Failed to generate PDF");
-      }
-
-      // Store PDF URL and show success message with download option
-      localStorage.setItem("opra_pdf_url", response.pdfUrl);
-      toast.success("OPRA Agreement generated successfully", {
-        action: {
-          label: 'Download PDF',
-          onClick: () => {
-            window.open(response.pdfUrl, "_blank");
-          }
-        },
-      });
-
+      
       // Update registration progress to registration_completed
-      const progressResult = await updateRegistrationProgress("registration_completed");
+      const progressResult = await updateRegistrationProgress("opra_agreements");
       if (!progressResult.success) {
         throw new Error(progressResult.error);
       }
 
-      // Show completion message
-      toast.success("Registration process completed!");
-
-      // Small delay to ensure the toasts are seen
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
       // Redirect to the next step
-      router.push("/registration-completed");
+      router.push("/opra-agreements");
+
     } catch (error) {
       console.error("Error in questionnaire submission:", error);
       toast.error(
