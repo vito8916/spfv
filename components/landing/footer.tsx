@@ -41,11 +41,6 @@ export function Footer() {
                       SPFV Blog
                     </Link>
                   </li>
-                  <li>
-                    <Link href="/docs" className="hover:underline">
-                      Documentation
-                    </Link>
-                  </li>
                 </ul>
               </div>
               <div>
