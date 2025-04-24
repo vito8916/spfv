@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Type is required" }, { status: 400 });
     }
 
-    if (type !== "percent" && type !== "dollar") {
+    if (type !== "percent" && type !== "dollar" && type !== "dollar_pos" && type !== "percent_pos" && type !== "dollar_neg" && type !== "percent_neg") {
       return NextResponse.json({ error: "Invalid type" }, { status: 400 });
     }
 
