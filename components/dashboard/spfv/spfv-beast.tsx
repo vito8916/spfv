@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Line } from "recharts";
 import { Bar } from "recharts";
 import {
@@ -30,8 +30,10 @@ import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSpfvBeastMonthly } from "@/hooks/use-spfv-beast-monthly";
 import { format } from "date-fns";
-import { Tabs } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SPFVBeastDaily from "./spfv-beast-daily";
+
 interface SPFVBeastProps {
   symbol: string;
   expirationDate?: Date;
@@ -105,6 +107,8 @@ export default function SPFVBeast({
   expirationDate,
   refreshInterval = 0,
 }: SPFVBeastProps) {
+  const [activeTab, setActiveTab] = useState("30days");
+
   // Use enhanced hook with pre-processed data and stats
   const { data, stats, error, isLoading } = useSpfvBeastMonthly(
     symbol,
@@ -112,49 +116,43 @@ export default function SPFVBeast({
     refreshInterval
   );
 
-  // Handle loading state
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <Skeleton className="h-8 w-3/4" />
-          <Skeleton className="h-4 w-1/2 mt-2" />
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-[500px] w-full" />
-        </CardContent>
-        <CardFooter>
-          <Skeleton className="h-4 w-full" />
-        </CardFooter>
-      </Card>
-    );
-  }
+  // Handle loading state for monthly view
+  const MonthlyView = () => {
+    if (isLoading) {
+      return (
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-3/4" />
+            <Skeleton className="h-4 w-1/2 mt-2" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-[500px] w-full" />
+          </CardContent>
+          <CardFooter>
+            <Skeleton className="h-4 w-full" />
+          </CardFooter>
+        </Card>
+      );
+    }
 
-  // Handle error state
-  if (error || !data?.length) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{symbol} Premarket Numbers</CardTitle>
-          <CardDescription className="text-red-500">
-            Error loading data. Please try again later.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="h-[500px] flex items-center justify-center">
-          <p className="text-muted-foreground">No data available</p>
-        </CardContent>
-      </Card>
-    );
-  }
+    // Handle error state
+    if (error || !data?.length) {
+      return (
+        <Card>
+          <CardHeader>
+            <CardTitle>{symbol} Premarket Numbers</CardTitle>
+            <CardDescription className="text-red-500">
+              Error loading data. Please try again later.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="h-[500px] flex items-center justify-center">
+            <p className="text-muted-foreground">No data available</p>
+          </CardContent>
+        </Card>
+      );
+    }
 
-  return (
-    <div className="flex flex-col gap-4">
-      <Tabs defaultValue="30days" className="w-[400px]">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="30days">30 Days</TabsTrigger>
-          <TabsTrigger value="daily">Daily</TabsTrigger>
-        </TabsList>
-      </Tabs>
+    return (
       <Card>
         <CardHeader>
           <CardTitle>{symbol} Premarket Beast Numbers</CardTitle>
@@ -249,6 +247,23 @@ export default function SPFVBeast({
           </div>
         </CardFooter>
       </Card>
+    );
+  };
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Tabs defaultValue="30days" value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-[400px] grid-cols-2">
+          <TabsTrigger value="30days">30 Days</TabsTrigger>
+          <TabsTrigger value="daily">Daily</TabsTrigger>
+        </TabsList>
+        <TabsContent value="30days">
+          <MonthlyView />
+        </TabsContent>
+        <TabsContent value="daily">
+          <SPFVBeastDaily symbol={symbol}  refreshInterval={refreshInterval} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
