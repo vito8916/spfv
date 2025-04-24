@@ -10,7 +10,7 @@ import ToggleType from "@/components/dashboard/screener/toggle-type";
 
 export default function StockScreener() {
   const [refreshInterval, setRefreshInterval] = useState(0);
-  const [selectedType, setSelectedType] = useState("dollar");
+  const [selectedType, setSelectedType] = useState("dollar_pos");
   const { data, isLoading, isError, mutate } = useSpfvTop(selectedType, refreshInterval);
 
   console.log("refreshInterval", refreshInterval);

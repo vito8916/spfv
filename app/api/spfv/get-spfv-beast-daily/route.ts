@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Format dates
-  const endDateFormatted = format(endDate, "yyyy-MM-dd");
+  const endDateFormatted = format(endDate.setDate(endDate.getDate() - 1), "yyyy-MM-dd");
   
   // For daily view, we want just a single day of data
   // For startDate, use the same day as endDate to get just one day's data
