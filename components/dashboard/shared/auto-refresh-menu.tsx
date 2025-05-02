@@ -10,7 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
-import { Settings, RefreshCcw, Loader2 } from "lucide-react";
+import { RefreshCcw, Loader2, Clock } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -47,12 +47,12 @@ export default function AutoRefreshMenu({ onRefreshIntervalChange, onManualRefre
             <TooltipTrigger asChild>
               <DropdownMenuTrigger asChild>
                 <Button size="sm" variant="outline" className="relative">
-                  <Settings className="h-4 w-4 mr-1" />
-                  <span>Refresh</span>
+                  <Clock className="h-4 w-4 mr-1" />
+                  <span className="hidden md:block">Refresh</span>
                   {refreshRate > 0 && (
-                    <Badge variant="outline" className="ml-1 w-10 h-5 px-2 text-primary">
-                      {refreshRate}s
-                    </Badge>
+                      <Badge variant="outline" className="ml-1 w-10 h-5 px-2 text-primary">
+                        {refreshRate}s
+                      </Badge>
                   )}
                 </Button>
               </DropdownMenuTrigger>
@@ -64,9 +64,9 @@ export default function AutoRefreshMenu({ onRefreshIntervalChange, onManualRefre
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>Auto Refresh Settings</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuRadioGroup 
-              value={refreshRate.toString()} 
-              onValueChange={(value) => setRefreshRate(parseInt(value))}
+            <DropdownMenuRadioGroup
+                value={refreshRate.toString()}
+                onValueChange={(value) => setRefreshRate(parseInt(value))}
             >
               <DropdownMenuRadioItem value="0" className="cursor-pointer">
                 Off
@@ -89,16 +89,16 @@ export default function AutoRefreshMenu({ onRefreshIntervalChange, onManualRefre
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
+            <Button
+                size="sm"
+                variant="outline"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
             >
               {isRefreshing ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <RefreshCcw className="h-4 w-4" />
+                  <RefreshCcw className="h-4 w-4" />
               )}
             </Button>
           </TooltipTrigger>
