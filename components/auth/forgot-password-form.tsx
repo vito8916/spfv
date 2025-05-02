@@ -81,7 +81,7 @@ const ForgotPasswordForm = () => {
 
                             <Button type="submit" className="mt-4 w-full" tabIndex={4} disabled={isSubmitting}>
                                 {isSubmitting && <LoaderCircle className="h-4 w-4 animate-spin"/>}
-                                Reset password
+                                Send Reset Link
                             </Button>
                         </div>
 

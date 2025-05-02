@@ -17,9 +17,11 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     await supabase.auth.exchangeCodeForSession(code);
   }
+  const forwardedHost = request.headers.get("x-forwarded-host"); // original origin before load balancer
 
   if (redirectTo) {
-    return NextResponse.redirect(`${origin}${redirectTo}`);
+    //return NextResponse.redirect(`https://${forwardedHost}${next}`);
+    return NextResponse.redirect(`https://${forwardedHost}${redirectTo}`);
   }
 
   // URL to redirect to after sign up process completes
