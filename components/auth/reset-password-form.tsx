@@ -34,7 +34,6 @@ const ResetPasswordForm = () => {
             const formData = new FormData();
             formData.append('password', data.password);
             formData.append('confirmPassword', data.confirmPassword);
-            console.log(formData);
 
             const result = await resetPasswordAction(formData);
             setFormMessage(result.message);
@@ -94,7 +93,7 @@ const ResetPasswordForm = () => {
 
                             <Button type="submit" className="mt-4 w-full" tabIndex={4} disabled={isSubmitting}>
                                 {isSubmitting && <LoaderCircle className="h-4 w-4 animate-spin"/>}
-                                Log in
+                                Change password
                             </Button>
                         </div>
 
