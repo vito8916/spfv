@@ -11,7 +11,10 @@ import ToggleType from "@/components/dashboard/screener/toggle-type";
 export default function StockScreener() {
   const [refreshInterval, setRefreshInterval] = useState(0);
   const [selectedType, setSelectedType] = useState("dollar_pos");
-  const { data, isLoading, isError, mutate } = useSpfvTop(selectedType, refreshInterval);
+  const { data, isLoading, isError, mutate } = useSpfvTop(
+      selectedType,
+      refreshInterval
+  );
 
   console.log("refreshInterval", refreshInterval);
   console.log("selectedType", selectedType);
@@ -19,37 +22,43 @@ export default function StockScreener() {
   console.log("isLoading", isLoading);
   console.log("isError", isError);
 
-
   const handleManualRefresh = () => {
     mutate(); // Manually trigger a revalidation of the data
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center pb-2 border-b">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Stock Screener</h1>
-          <p className="text-muted-foreground mt-1">
-            Find and analyze options with potential based on SPFV metrics.
-          </p>
+      <div className="space-y-6 p-6">
+        <div className="flex justify-between gap-4 items-center md:items-center pb-2 border-b">
+          <div>
+            <h1 className="text-xl md:text-3xl font-bold tracking-tight">Stock Screener</h1>
+            <p className="hidden md:block text-muted-foreground mt-1">
+              Find and analyze options with potential based on SPFV metrics.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <AutoRefreshMenu
+                onRefreshIntervalChange={setRefreshInterval}
+                onManualRefresh={handleManualRefresh}
+            />
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <ToggleType selectedValue={selectedType} onValueChange={setSelectedType} />
-          <AutoRefreshMenu
-            onRefreshIntervalChange={setRefreshInterval}
-            onManualRefresh={handleManualRefresh}
-          />
+
+        <div className="flex flex-col gap-4">
+          <div className="w-full overflow-x-auto">
+            <ToggleType
+                selectedValue={selectedType}
+                onValueChange={setSelectedType}
+            />
+          </div>
+          {isError && <div className="text-red-500">Error loading data</div>}
+          <Suspense fallback={<ScreenerSkeleton />}>
+            <ScreenerDataTable
+                columns={columns}
+                data={data}
+                isLoading={isLoading}
+            />
+          </Suspense>
         </div>
       </div>
-
-      {isError && <div className="text-red-500">Error loading data</div>}
-      <Suspense fallback={<ScreenerSkeleton />}>
-        <ScreenerDataTable
-          columns={columns}
-          data={data}
-          isLoading={isLoading}
-        />
-      </Suspense>
-    </div>
   );
 }
