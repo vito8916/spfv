@@ -142,3 +142,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media (max-width: 640px) {
+  .pinned-column::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: -6px;
+    width: 6px;
+    height: 100%;
+    background-image: linear-gradient(90deg, #e0e3eb54, #e0e3eb00);
+    pointer-events: none;
+    z-index: -1;
+    display: block;
+  }
+}
