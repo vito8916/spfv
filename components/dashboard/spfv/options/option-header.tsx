@@ -33,12 +33,12 @@ export default function HeaderOptions() {
     if(marketIsOpen) {
       setSelectedDate(date);
       globalMutate(
-        (key) => typeof key === 'string' && 
-          (key.includes('/api/spfv/get-tiers') || 
-           key.includes('/api/spfv/get-filtered-chain') || 
-           key.includes('/api/spfv/get-last-price-info')),
-        undefined,
-        { revalidate: true }
+          (key) => typeof key === 'string' &&
+              (key.includes('/api/spfv/get-tiers') ||
+                  key.includes('/api/spfv/get-filtered-chain') ||
+                  key.includes('/api/spfv/get-last-price-info')),
+          undefined,
+          { revalidate: true }
       );
       toast.success(`Selected date: ${format(date, "PP")}`);
     } else {
@@ -50,12 +50,12 @@ export default function HeaderOptions() {
     if(marketIsOpen) {
       setSelectedSymbol(symbol);
       globalMutate(
-        (key) => typeof key === 'string' && 
-          (key.includes('/api/spfv/get-tiers') || 
-           key.includes('/api/spfv/get-filtered-chain') || 
-           key.includes('/api/spfv/get-last-price-info')),
-        undefined,
-        { revalidate: true }
+          (key) => typeof key === 'string' &&
+              (key.includes('/api/spfv/get-tiers') ||
+                  key.includes('/api/spfv/get-filtered-chain') ||
+                  key.includes('/api/spfv/get-last-price-info')),
+          undefined,
+          { revalidate: true }
       );
     } else {
       toast.error("Market is closed");
@@ -66,12 +66,12 @@ export default function HeaderOptions() {
     if(marketIsOpen) {
       setSelectedOptionType(optionType);
       globalMutate(
-        (key) => typeof key === 'string' && 
-          (key.includes('/api/spfv/get-tiers') || 
-           key.includes('/api/spfv/get-filtered-chain') || 
-           key.includes('/api/spfv/get-last-price-info')),
-        undefined,
-        { revalidate: true }
+          (key) => typeof key === 'string' &&
+              (key.includes('/api/spfv/get-tiers') ||
+                  key.includes('/api/spfv/get-filtered-chain') ||
+                  key.includes('/api/spfv/get-last-price-info')),
+          undefined,
+          { revalidate: true }
       );
     } else {
       toast.error("Market is closed");
@@ -87,12 +87,12 @@ export default function HeaderOptions() {
     if(marketIsOpen) {
       toast.success("Refreshing data...");
       globalMutate(
-        (key) => typeof key === 'string' && 
-          (key.includes('/api/spfv/get-tiers') || 
-           key.includes('/api/spfv/get-filtered-chain') || 
-           key.includes('/api/spfv/get-last-price-info')),
-        undefined,
-        { revalidate: true }
+          (key) => typeof key === 'string' &&
+              (key.includes('/api/spfv/get-tiers') ||
+                  key.includes('/api/spfv/get-filtered-chain') ||
+                  key.includes('/api/spfv/get-last-price-info')),
+          undefined,
+          { revalidate: true }
       );
     } else {
       toast.error("Market is closed");
@@ -100,76 +100,80 @@ export default function HeaderOptions() {
   };
 
   return (
-    <div className="space-y-4 w-full">
-      <div className="flex gap-x-4 justify-between w-full">
-        <div className="flex gap-x-4 items-center">
-          <Suspense fallback={<SymbolSelectorSkeleton />}>
-            <SymbolSelector onSymbolSelect={handleSymbolSelect} />
-          </Suspense>
-          <Separator className="my-4" orientation="vertical" />
-          <Suspense fallback={<OptionTypeSelectorSkeleton />}>
-            <OptionTypeSelectorRadio onOptionTypeSelect={handleOptionTypeSelect} />
+      <div className="space-y-4 w-full">
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-x-4 justify-between w-full">
+          <div className="flex flex-col sm:flex-row gap-x-2 gap-y-2 items-start sm:items-center">
+            <Suspense fallback={<SymbolSelectorSkeleton />}>
+              <SymbolSelector onSymbolSelect={handleSymbolSelect} />
+            </Suspense>
+            <Separator decorative className="hidden sm:block my-4 data-[orientation=vertical]:h-6" orientation="vertical" />
+            <Suspense fallback={<OptionTypeSelectorSkeleton />}>
+              <OptionTypeSelectorRadio onOptionTypeSelect={handleOptionTypeSelect} />
+            </Suspense>
+          </div>
+          <div className="flex justify-end">
+            <AutoRefreshMenu
+                onRefreshIntervalChange={handleRefreshIntervalChange}
+                onManualRefresh={handleManualRefresh}
+            />
+          </div>
+        </div>
+        <div className="w-full overflow-x-auto">
+          <Suspense fallback={<HorizontalDatePickerSkeleton />}>
+            <HorizontalDatePicker
+                selectedDate={selectedDate}
+                onDateSelect={handleDateSelect}
+                startDate={new Date()}
+                daysToShow={50}
+                disabled={(date) => {
+                  const dayOfWeek = date.getDay();
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  if(selectedSymbol?.includes("SPY") || selectedSymbol?.includes("QQQ") || selectedSymbol?.includes("IWM") || selectedSymbol?.includes("NDX") || selectedSymbol?.includes("SPX")) {
+                    return dayOfWeek === 0 ||
+                        dayOfWeek === 6 ||
+                        date < today;
+                  }
+                  return dayOfWeek !== 5 || date < today;
+                }}
+            />
           </Suspense>
         </div>
-        <AutoRefreshMenu
-          onRefreshIntervalChange={handleRefreshIntervalChange}
-          onManualRefresh={handleManualRefresh}
-        />
+
+        {!marketIsOpen && <MarketClosedMessage />}
+
+        {/* Show OptionsContent only when both symbol and date are selected */}
+        {
+            (!selectedSymbol || selectedDate === undefined) && (
+                <div className="flex justify-center items-center h-full mt-10">
+                  <p className="text-sm sm:text-base text-gray-500 text-center">Please select a symbol and date to continue</p>
+                </div>
+            )
+        }
+        {selectedSymbol && selectedDate && (
+            <>
+              {selectedOptionType === "chain" && (
+                  <OptionsContent
+                      symbol={selectedSymbol}
+                      expirationDate={selectedDate}
+                      refreshInterval={refreshInterval}
+                  />
+              )}
+              {selectedOptionType === "atr" && (
+                  <ATRLineGraph
+                      symbol={selectedSymbol}
+                      refreshInterval={refreshInterval}
+                  />
+              )}
+              {selectedOptionType === "beast" && (
+                  <SPFVBeast
+                      symbol={selectedSymbol}
+                      expirationDate={selectedDate}
+                      refreshInterval={refreshInterval}
+                  />
+              )}
+            </>
+        )}
       </div>
-      <Suspense fallback={<HorizontalDatePickerSkeleton />}>
-        <HorizontalDatePicker
-          selectedDate={selectedDate}
-          onDateSelect={handleDateSelect}
-          startDate={new Date()}
-          daysToShow={50}
-          disabled={(date) => {
-            const dayOfWeek = date.getDay();
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            if(selectedSymbol?.includes("SPY") || selectedSymbol?.includes("QQQ") || selectedSymbol?.includes("IWM") || selectedSymbol?.includes("NDX") || selectedSymbol?.includes("SPX")) {
-              return dayOfWeek === 0 || 
-              dayOfWeek === 6 || 
-              date < today;
-            } 
-            return dayOfWeek !== 5 || date < today;
-          }}
-        />
-      </Suspense>
-
-      {!marketIsOpen && <MarketClosedMessage />}
-
-      {/* Show OptionsContent only when both symbol and date are selected */}
-      {
-        (!selectedSymbol || selectedDate === undefined) && (
-          <div className="flex justify-center items-center h-full mt-10">
-            <p className="text-gray-500">Please select a symbol and date to continue</p>
-          </div>
-        )
-      }
-      {selectedSymbol && selectedDate && (
-        <>
-          {selectedOptionType === "chain" && (
-            <OptionsContent 
-              symbol={selectedSymbol} 
-              expirationDate={selectedDate} 
-              refreshInterval={refreshInterval}
-            />
-          )}
-          {selectedOptionType === "atr" && (
-              <ATRLineGraph 
-                symbol={selectedSymbol}
-                refreshInterval={refreshInterval}
-              />
-          )}
-          {selectedOptionType === "beast" && (
-            <SPFVBeast 
-              symbol={selectedSymbol} 
-              expirationDate={selectedDate} 
-              refreshInterval={refreshInterval}
-            />
-          )}
-        </>
-      )}
-    </div>
   );
 }
