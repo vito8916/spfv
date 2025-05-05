@@ -6,17 +6,17 @@ const ImagesCarousel = () => {
     <div className="flex-shrink-0 flex justify-around gap-4 min-w-full overflow-x-hidden">
       <div className="flex-shrink-0 flex justify-around gap-4 min-w-full animate-scroll">
         <Image
-          className="rounded-t-2xl"
+          className="rounded-t-lg"
           width={808}
           height={487}
-          src="/assets/images/bienvenida.jpg"
+          src="/assets/images/spfvtool.webp"
           alt="Pricing page illustration"
         />
         <Image
-        className="rounded-t-2xl"
+        className="rounded-t-lg"
           width={808}
           height={487}
-          src="/assets/images/bienvenida.jpg"
+          src="/assets/images/screener.webp"
           alt="Customer portal illustration"
         />
       </div>
@@ -25,17 +25,17 @@ const ImagesCarousel = () => {
         aria-hidden="true"
       >
         <Image
-          className="rounded-t-2xl"
+          className="rounded-t-lg"
           width={808}
           height={487}
-          src="/assets/images/bienvenida.jpg"
+          src="/assets/images/spfvtool.webp"
           alt="Pricing page illustration"
         />
         <Image
-          className="rounded-t-2xl"
+          className="rounded-t-lg"
           width={808}
           height={487}
-          src="/assets/images/bienvenida.jpg"
+          src="/assets/images/screener.webp"
           alt="Customer portal illustration"
         />
       </div>
