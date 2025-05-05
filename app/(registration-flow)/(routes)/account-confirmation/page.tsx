@@ -35,7 +35,7 @@ const AccountConfirmationPage = () => {
                 setError(null);
 
                 // Initialize registration progress
-                await updateRegistrationProgress('account_confirmation');
+                //await updateRegistrationProgress('account_confirmation');
 
                 // Fetch plans
                 const response = await fetch('/api/stripe/subscription-plans');
